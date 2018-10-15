@@ -101,6 +101,11 @@
   }
 }
 
+h1.co-m-pane__heading {
+  // we can either set these explicitly or adopt the .pf-c-title.pf-X classes and variables
+  font-size: 26px;
+}
+
 .co-m-pane__heading-link {
   font-size: $font-size-base;
 }
@@ -239,7 +244,6 @@
   padding: 20px;
   margin: 30px;
 }
-
 
 // Prevent iOS phones from zooming on form inputs
 @supports (-webkit-overflow-scrolling: touch) { // Target mobile Safari

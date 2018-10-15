@@ -14,9 +14,9 @@ import { detectMonitoringURLs } from '../monitoring';
 import { analyticsSvc } from '../module/analytics';
 import { AlertsPage, AlertsDetailsPage, AlertRulesDetailsPage } from './alert';
 import { GlobalNotifications } from './global-notifications';
-import { Masthead } from './masthead';
+// import { Masthead } from './masthead';
 import { NamespaceBar } from './namespace';
-import { Nav } from './nav';
+// import { Nav } from './nav';
 import { SearchPage } from './search';
 import { CreateSilence, EditSilence, SilencesPage, SilencesDetailsPage } from './silence';
 import { ResourceDetailsPage, ResourceListPage } from './resource-list';
@@ -28,6 +28,50 @@ import { referenceForModel } from '../module/k8s';
 import k8sActions from '../module/k8s/k8s-actions';
 import '../vendor.scss';
 import '../style.scss';
+
+//PF4 Imports
+import '@patternfly/react-core/dist/styles/base.css';
+import {
+  Avatar,
+  BackgroundImage,
+  BackgroundImageSrc,
+  Brand,
+  Button,
+  ButtonVariant,
+  Dropdown,
+  DropdownToggle,
+  DropdownItem,
+  DropdownSeparator,
+  KebabToggle,
+  Nav,
+  NavExpandable,
+  NavItem,
+  NavList,
+  Page,
+  PageHeader,
+  PageSection,
+  PageSectionVariants,
+  PageSidebar,
+  Toolbar,
+  ToolbarGroup,
+  ToolbarItem
+} from '@patternfly/react-core';
+import { global_breakpoint_md as breakpointMd } from '@patternfly/react-tokens';
+import accessibleStyles from '@patternfly/patternfly-next/utilities/Accessibility/accessibility.css';
+import spacingStyles from '@patternfly/patternfly-next/utilities/Spacing/spacing.css';
+import { css } from '@patternfly/react-styles';
+import { BellIcon, CogIcon } from '@patternfly/react-icons';
+import brandImg from '../../public/imgs/okd-logo.svg';
+import avatarImg from '../../public/imgs/img_avatar.png';
+import bgFilter from '../../public/imgs/background-filter.svg';
+import pfbg_576 from '../../public/imgs/pfbg_576.jpg';
+import pfbg_576_2x from '../../public/imgs/pfbg_576@2x.jpg';
+import pfbg_768 from '../../public/imgs/pfbg_768.jpg';
+import pfbg_768_2x from '../../public/imgs/pfbg_768@2x.jpg';
+import pfbg_992 from '../../public/imgs/pfbg_992.jpg';
+import pfbg_992_2x from '../../public/imgs/pfbg_992@2x.jpg';
+import pfbg_1200 from '../../public/imgs/pfbg_1200.jpg';
+import pfbg_2000 from '../../public/imgs/pfbg_2000.jpg';
 
 // Edge lacks URLSearchParams
 import 'url-search-params-polyfill';
@@ -106,7 +150,50 @@ const DefaultPage = connectToFlags(FLAGS.OPENSHIFT)(({ flags }) => {
 const LazyRoute = (props) => <Route {...props} component={(componentProps) => <AsyncComponent loader={props.loader} kind={props.kind} {...componentProps} />} />;
 
 class App extends React.PureComponent {
-  componentDidUpdate (prevProps) {
+  static title = 'Using expandable navigation';
+
+  state = {
+    isDropdownOpen: false,
+    isKebabDropdownOpen: false,
+    isNavOpen:
+      typeof window !== 'undefined' &&
+      window.innerWidth >= parseInt(breakpointMd.value, 10),
+    activeGroup: 'grp-1',
+    activeItem: 'grp-1_itm-2'
+  };
+
+  onDropdownToggle = isDropdownOpen => {
+    this.setState({
+      isDropdownOpen
+    });
+  };
+  onDropdownSelect = event => {
+    this.setState({
+      isDropdownOpen: !this.state.isDropdownOpen
+    });
+  };
+  onKebabDropdownToggle = isKebabDropdownOpen => {
+    this.setState({
+      isKebabDropdownOpen
+    });
+  };
+  onKebabDropdownSelect = event => {
+    this.setState({
+      isKebabDropdownOpen: !this.state.isKebabDropdownOpen
+    });
+  };
+  onNavSelect = result => {
+    this.setState({
+      activeItem: result.itemId,
+      activeGroup: result.groupId
+    });
+  };
+  onNavToggle = () => {
+    this.setState({
+      isNavOpen: !this.state.isNavOpen
+    });
+  };
+  componentDidUpdate(prevProps) {
     const props = this.props;
     // Prevent infinite loop in case React Router decides to destroy & recreate the component (changing key)
     const oldLocation = _.omit(prevProps.location, ['key']);
@@ -120,120 +207,831 @@ class App extends React.PureComponent {
     analyticsSvc.route(pathname);
   }
 
-  render () {
-    return <React.Fragment>
-      <Helmet titleTemplate={`%s · ${productName}`} defaultTitle={productName} />
-      <Masthead />
-      <Nav />
-      <div id="content">
-        <Route path={namespacedRoutes} component={NamespaceBar} />
-        <GlobalNotifications />
-        <div id="content-scrollable">
-          <Switch>
-            <Route path={['/all-namespaces', '/ns/:ns',]} component={RedirectComponent} />
+  render() {
+    const {
+      isDropdownOpen,
+      isKebabDropdownOpen,
+      activeItem,
+      isNavOpen,
+      activeGroup
+    } = this.state;
 
-            <LazyRoute path="/overview/ns/:ns" exact loader={() => import('./overview' /* webpackChunkName: "overview" */).then(m => m.OverviewPage)} />
-            <LazyRoute path="/overview/all-namespaces" exact loader={() => import('./overview' /* webpackChunkName: "overview" */).then(m => m.OverviewPage)} />
-            <Route path="/overview" exact component={NamespaceRedirect} />
+    const PageNav = (
+      <Nav onSelect={this.onNavSelect} aria-label="Nav">
+        <NavList>
+          <NavExpandable
+            title="Home"
+            groupId="grp-1"
+            isActive={activeGroup === 'grp-1'}
+            isExpanded
+          >
+            <NavItem
+              groupId="grp-1"
+              itemId="grp-1_itm-1"
+              to="/overview/ns/default"
+              isActive={activeItem === 'grp-1_itm-1'}
+            >
+              Overview
+            </NavItem>
+            <NavItem
+              to="/status/ns/default"
+              groupId="grp-1"
+              itemId="grp-1_itm-2"
+              isActive={activeItem === 'grp-1_itm-2'}
+            >
+              Status
+            </NavItem>
+            <NavItem
+              to="/catalog/ns/default"
+              groupId="grp-1"
+              itemId="grp-1_itm-3"
+              isActive={activeItem === 'grp-1_itm-3'}
+            >
+              Catalog
+            </NavItem>
+            <NavItem
+              to="/search/ns/default"
+              groupId="grp-1"
+              itemId="grp-1_itm-4"
+              isActive={activeItem === 'grp-1_itm-4'}
+            >
+              Search
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/events"
+              groupId="grp-1"
+              itemId="grp-1_itm-5"
+              isActive={activeItem === 'grp-1_itm-5'}
+            >
+              Events
+            </NavItem>
+          </NavExpandable>
+          <NavExpandable
+            title="Operators"
+            groupId="grp-2"
+            isActive={activeGroup === 'grp-2'}
+          >
+            <NavItem
+              to="#expandable-4"
+              groupId="grp-2"
+              itemId="grp-2_itm-1"
+              isActive={activeItem === 'grp-2_itm-1'}
+            >
+              Subnav Link 1
+            </NavItem>
+            <NavItem
+              to="#expandable-5"
+              groupId="grp-2"
+              itemId="grp-2_itm-2"
+              isActive={activeItem === 'grp-2_itm-2'}
+            >
+              Subnav Link 2
+            </NavItem>
+          </NavExpandable>
+          <NavExpandable
+            title="Workloads"
+            groupId="grp-3"
+            isActive={activeGroup === 'grp-3'}
+          >
+            <NavItem
+              to="/k8s/ns/default/pods"
+              groupId="grp-3"
+              itemId="grp-3_itm-1"
+              isActive={activeItem === 'grp-3_itm-1'}
+            >
+              Pods
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/pods"
+              groupId="grp-3"
+              itemId="grp-3_itm-2"
+              isActive={activeItem === 'grp-3_itm-2'}
+            >
+              Deployments
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/deploymentconfigs"
+              groupId="grp-3"
+              itemId="grp-3_itm-2"
+              isActive={activeItem === 'grp-3_itm-2'}
+            >
+              Deployment Configs
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/statefulsets"
+              groupId="grp-3"
+              itemId="grp-3_itm-2"
+              isActive={activeItem === 'grp-3_itm-2'}
+            >
+              Stateful Sets
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/secrets"
+              groupId="grp-3"
+              itemId="grp-3_itm-2"
+              isActive={activeItem === 'grp-3_itm-2'}
+            >
+              Secrets
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/configmaps"
+              groupId="grp-3"
+              itemId="grp-3_itm-2"
+              isActive={activeItem === 'grp-3_itm-2'}
+            >
+              Config Maps
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/cronjobs"
+              groupId="grp-3"
+              itemId="grp-3_itm-2"
+              isActive={activeItem === 'grp-3_itm-2'}
+            >
+              Cron Jobs
+            </NavItem>
+            <NavItem
+              to="/k8s/ns/default/jobs"
+              groupId="grp-3"
+              itemId="grp-3_itm-2"
+              isActive={activeItem === 'grp-3_itm-2'}
+            >
+              Jobs
+            </NavItem>
+          </NavExpandable>
+          <NavExpandable
+            title="Networking"
+            groupId="grp-4"
+            isActive={activeGroup === 'grp-3'}
+          >
+            <NavItem
+              to="#expandable-7"
+              groupId="grp-4"
+              itemId="grp-4_itm-1"
+              isActive={activeItem === 'grp-3_itm-1'}
+            >
+              Subnav Link 1
+            </NavItem>
+          </NavExpandable>
+          <NavExpandable
+            title="Storage"
+            groupId="grp-4"
+            isActive={activeGroup === 'grp-3'}
+          >
+            <NavItem
+              to="#expandable-7"
+              groupId="grp-5"
+              itemId="grp-5_itm-1"
+              isActive={activeItem === 'grp-3_itm-1'}
+            >
+              Subnav Link 1
+            </NavItem>
+          </NavExpandable>
+          <NavExpandable
+            title="Builds"
+            groupId="grp-6"
+            isActive={activeGroup === 'grp-3'}
+          >
+            <NavItem
+              to="#expandable-7"
+              groupId="grp-6"
+              itemId="grp-6_itm-1"
+              isActive={activeItem === 'grp-3_itm-1'}
+            >
+              Subnav Link 1
+            </NavItem>
+          </NavExpandable>
+          <NavExpandable
+            title="Service Catalog"
+            groupId="grp-7"
+            isActive={activeGroup === 'grp-3'}
+          >
+            <NavItem
+              to="#expandable-7"
+              groupId="grp-7"
+              itemId="grp-7_itm-1"
+              isActive={activeItem === 'grp-3_itm-1'}
+            >
+              Subnav Link 1
+            </NavItem>
+          </NavExpandable>
+        </NavList>
+      </Nav>
+    );
+    const PageToolbar = (
+      <Toolbar>
+        <ToolbarGroup
+          className={css(accessibleStyles.srOnly, accessibleStyles.visibleOnLg)}
+        >
+          <ToolbarItem>
+            <Button
+              id="nav-toggle"
+              aria-label="Overflow actions"
+              variant={ButtonVariant.plain}
+            >
+              <BellIcon />
+            </Button>
+          </ToolbarItem>
+          <ToolbarItem>
+            <Button
+              id="nav-toggle"
+              aria-label="Overflow actions"
+              variant={ButtonVariant.plain}
+            >
+              <CogIcon />
+            </Button>
+          </ToolbarItem>
+        </ToolbarGroup>
+        <ToolbarGroup>
+          <ToolbarItem
+            className={css(accessibleStyles.hiddenOnLg, spacingStyles.mr_0)}
+          >
+            <Dropdown
+              isPlain
+              position="right"
+              onSelect={this.onKebabDropdownSelect}
+              toggle={<KebabToggle onToggle={this.onKebabDropdownToggle} />}
+              isOpen={isKebabDropdownOpen}
+            >
+              <DropdownItem>
+                <BellIcon /> Notifications
+              </DropdownItem>
+              <DropdownItem>
+                <CogIcon /> Settings
+              </DropdownItem>
+            </Dropdown>
+          </ToolbarItem>
+          <ToolbarItem
+            className={css(
+              accessibleStyles.srOnly,
+              accessibleStyles.visibleOnMd
+            )}
+          >
+            <Dropdown
+              isPlain
+              position="right"
+              onSelect={this.onDropdownSelect}
+              isOpen={isDropdownOpen}
+              toggle={
+                <DropdownToggle onToggle={this.onDropdownToggle}>
+                  Kyle Baker
+                </DropdownToggle>
+              }
+            >
+              <DropdownItem>Link</DropdownItem>
+              <DropdownItem component="button">Action</DropdownItem>
+              <DropdownItem isDisabled>Disabled Link</DropdownItem>
+              <DropdownItem isDisabled component="button">
+                Disabled Action
+              </DropdownItem>
+              <DropdownSeparator />
+              <DropdownItem>Separated Link</DropdownItem>
+              <DropdownItem component="button">Separated Action</DropdownItem>
+            </Dropdown>
+          </ToolbarItem>
+        </ToolbarGroup>
+      </Toolbar>
+    );
 
-            <LazyRoute path="/catalog/all-namespaces" exact loader={() => import('./catalog' /* webpackChunkName: "catalog" */).then(m => m.CatalogPage)} />
-            <LazyRoute path="/catalog/ns/:ns" exact loader={() => import('./catalog' /* webpackChunkName: "catalog" */).then(m => m.CatalogPage)} />
-            <Route path="/catalog" exact component={NamespaceRedirect} />
+    const bgImages = {
+      [BackgroundImageSrc.lg]: pfbg_1200,
+      [BackgroundImageSrc.md]: pfbg_992,
+      [BackgroundImageSrc.md2x]: pfbg_992_2x,
+      [BackgroundImageSrc.sm]: pfbg_768,
+      [BackgroundImageSrc.sm2x]: pfbg_768_2x,
+      [BackgroundImageSrc.xl]: pfbg_2000,
+      [BackgroundImageSrc.xs]: pfbg_576,
+      [BackgroundImageSrc.xs2x]: pfbg_576_2x,
+      [BackgroundImageSrc.filter]: bgFilter
+    };
 
-            <LazyRoute path="/status/all-namespaces" exact loader={() => import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(m => m.ClusterOverviewPage)} />
-            <LazyRoute path="/status/ns/:ns" exact loader={() => import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(m => m.ClusterOverviewPage)} />
-            <Route path="/status" exact component={NamespaceRedirect} />
+    const Header = (
+      <PageHeader
+        logo={<Brand src={brandImg} alt="Patternfly Logo" />}
+        toolbar={PageToolbar}
+        avatar={<Avatar src={avatarImg} alt="Avatar image" />}
+        showNavToggle
+        onNavToggle={this.onNavToggle}
+      />
+    );
+    const Sidebar = <PageSidebar nav={PageNav} isNavOpen={isNavOpen} />;
 
-            <LazyRoute path="/cluster-health" exact loader={() => import('./cluster-health' /* webpackChunkName: "cluster-health" */).then(m => m.ClusterHealth)} />
-            <LazyRoute path="/start-guide" exact loader={() => import('./start-guide' /* webpackChunkName: "start-guide" */).then(m => m.StartGuidePage)} />
+    return (
+      <React.Fragment>
+        <Helmet
+          titleTemplate={`%s · ${productName}`}
+          defaultTitle={productName}
+        />
+        <BackgroundImage src={bgImages} />
+        <Page header={Header} sidebar={Sidebar}>
+          <PageSection
+            variant={PageSectionVariants.light}
+            style={{ padding: 0 }}
+          >
+            <div id="content">
+              <Route path={namespacedRoutes} component={NamespaceBar} />
+              <GlobalNotifications />
+              <div id="content-scrollable">
+                <Switch>
+                  <Route
+                    path={['/all-namespaces', '/ns/:ns']}
+                    component={RedirectComponent}
+                  />
 
-            <LazyRoute path="/marketplace" exact loader={() => import('./marketplace/kubernetes-marketplace' /* webpackChunkName: "marketplace" */).then(m => m.MarketplacePage)} />
+                  <LazyRoute
+                    path="/overview/ns/:ns"
+                    exact
+                    loader={() =>
+                      import('./overview' /* webpackChunkName: "overview" */).then(
+                        m => m.OverviewPage
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/overview/all-namespaces"
+                    exact
+                    loader={() =>
+                      import('./overview' /* webpackChunkName: "overview" */).then(
+                        m => m.OverviewPage
+                      )
+                    }
+                  />
+                  <Route path="/overview" exact component={NamespaceRedirect} />
 
-            <LazyRoute path={`/k8s/ns/:ns/${SubscriptionModel.plural}/new`} exact loader={() => import('./operator-lifecycle-manager').then(m => NamespaceFromURL(m.CreateSubscriptionYAML))} />
+                  <LazyRoute
+                    path="/catalog/all-namespaces"
+                    exact
+                    loader={() =>
+                      import('./catalog' /* webpackChunkName: "catalog" */).then(
+                        m => m.CatalogPage
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/catalog/ns/:ns"
+                    exact
+                    loader={() =>
+                      import('./catalog' /* webpackChunkName: "catalog" */).then(
+                        m => m.CatalogPage
+                      )
+                    }
+                  />
+                  <Route path="/catalog" exact component={NamespaceRedirect} />
 
-            <LazyRoute path="/k8s/cluster/clusterserviceclasses/:name/create-instance" exact loader={() => import('./service-catalog/create-instance').then(m => m.CreateInstancePage)} />
-            <LazyRoute path="/k8s/ns/:ns/serviceinstances/:name/create-binding" exact loader={() => import('./service-catalog/create-binding').then(m => m.CreateBindingPage)} />
-            <LazyRoute path="/source-to-image" exact loader={() => import('./source-to-image').then(m => m.SourceToImagePage)} />
+                  <LazyRoute
+                    path="/status/all-namespaces"
+                    exact
+                    loader={() =>
+                      import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(
+                        m => m.ClusterOverviewPage
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/status/ns/:ns"
+                    exact
+                    loader={() =>
+                      import('./cluster-overview' /* webpackChunkName: "cluster-overview" */).then(
+                        m => m.ClusterOverviewPage
+                      )
+                    }
+                  />
+                  <Route path="/status" exact component={NamespaceRedirect} />
 
-            <Route path="/k8s/ns/:ns/alertmanagers/:name" exact render={({match}) => <Redirect to={`/k8s/ns/${match.params.ns}/${referenceForModel(AlertmanagerModel)}/${match.params.name}`} />} />
+                  <LazyRoute
+                    path="/cluster-health"
+                    exact
+                    loader={() =>
+                      import('./cluster-health' /* webpackChunkName: "cluster-health" */).then(
+                        m => m.ClusterHealth
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/start-guide"
+                    exact
+                    loader={() =>
+                      import('./start-guide' /* webpackChunkName: "start-guide" */).then(
+                        m => m.StartGuidePage
+                      )
+                    }
+                  />
 
-            <LazyRoute path={`/k8s/ns/:ns/${ClusterServiceVersionModel.plural}/:name/edit`} exact loader={() => import('./create-yaml').then(m => m.EditYAMLPage)} kind={referenceForModel(ClusterServiceVersionModel)} />
-            <LazyRoute path={`/k8s/ns/:ns/${ClusterServiceVersionModel.plural}/:appName/:plural/new`} exact loader={() => import('./operator-lifecycle-manager/create-crd-yaml').then(m => m.CreateCRDYAML)} />
-            <Route path={`/k8s/ns/:ns/${ClusterServiceVersionModel.plural}/:appName/:plural/:name`} component={ResourceDetailsPage} />
+                  <LazyRoute
+                    path="/marketplace"
+                    exact
+                    loader={() =>
+                      import('./marketplace/kubernetes-marketplace' /* webpackChunkName: "marketplace" */).then(
+                        m => m.MarketplacePage
+                      )
+                    }
+                  />
 
-            <LazyRoute path="/k8s/all-namespaces/events" exact loader={() => import('./events').then(m => NamespaceFromURL(m.EventStreamPage))} />
-            <LazyRoute path="/k8s/ns/:ns/events" exact loader={() => import('./events').then(m => NamespaceFromURL(m.EventStreamPage))} />
-            <Route path="/search/all-namespaces" exact component={NamespaceFromURL(SearchPage)} />
-            <Route path="/search/ns/:ns" exact component={NamespaceFromURL(SearchPage)} />
-            <Route path="/search" exact component={ActiveNamespaceRedirect} />
+                  <LazyRoute
+                    path={`/k8s/ns/:ns/${SubscriptionModel.plural}/new`}
+                    exact
+                    loader={() =>
+                      import('./operator-lifecycle-manager').then(m =>
+                        NamespaceFromURL(m.CreateSubscriptionYAML)
+                      )
+                    }
+                  />
 
-            <LazyRoute path="/k8s/all-namespaces/import" exact loader={() => import('./import-yaml').then(m => NamespaceFromURL(m.ImportYamlPage))} />
-            <LazyRoute path="/k8s/ns/:ns/import/" exact loader={() => import('./import-yaml').then(m => NamespaceFromURL(m.ImportYamlPage))} />
+                  <LazyRoute
+                    path="/k8s/cluster/clusterserviceclasses/:name/create-instance"
+                    exact
+                    loader={() =>
+                      import('./service-catalog/create-instance').then(
+                        m => m.CreateInstancePage
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/serviceinstances/:name/create-binding"
+                    exact
+                    loader={() =>
+                      import('./service-catalog/create-binding').then(
+                        m => m.CreateBindingPage
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/source-to-image"
+                    exact
+                    loader={() =>
+                      import('./source-to-image').then(m => m.SourceToImagePage)
+                    }
+                  />
 
-            <Route path="/k8s/ns/:ns/customresourcedefinitions/:plural" exact component={ResourceListPage} />
-            <Route path="/k8s/ns/:ns/customresourcedefinitions/:plural/:name" component={ResourceDetailsPage} />
-            <Route path="/k8s/all-namespaces/customresourcedefinitions/:plural" exact component={ResourceListPage} />
-            <Route path="/k8s/all-namespaces/customresourcedefinitions/:plural/:name" component={ResourceDetailsPage} />
+                  <Route
+                    path="/k8s/ns/:ns/alertmanagers/:name"
+                    exact
+                    render={({ match }) => (
+                      <Redirect
+                        to={`/k8s/ns/${match.params.ns}/${referenceForModel(
+                          AlertmanagerModel
+                        )}/${match.params.name}`}
+                      />
+                    )}
+                  />
 
-            {
-              // These pages are temporarily disabled. We need to update the safe resources list.
-              // <LazyRoute path="/k8s/cluster/clusterroles/:name/add-rule" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
-              // <LazyRoute path="/k8s/cluster/clusterroles/:name/:rule/edit" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
-            }
+                  <LazyRoute
+                    path={`/k8s/ns/:ns/${
+                      ClusterServiceVersionModel.plural
+                    }/:name/edit`}
+                    exact
+                    loader={() =>
+                      import('./create-yaml').then(m => m.EditYAMLPage)
+                    }
+                    kind={referenceForModel(ClusterServiceVersionModel)}
+                  />
+                  <LazyRoute
+                    path={`/k8s/ns/:ns/${
+                      ClusterServiceVersionModel.plural
+                    }/:appName/:plural/new`}
+                    exact
+                    loader={() =>
+                      import('./operator-lifecycle-manager/create-crd-yaml').then(
+                        m => m.CreateCRDYAML
+                      )
+                    }
+                  />
+                  <Route
+                    path={`/k8s/ns/:ns/${
+                      ClusterServiceVersionModel.plural
+                    }/:appName/:plural/:name`}
+                    component={ResourceDetailsPage}
+                  />
 
-            {
-              // <LazyRoute path="/k8s/ns/:ns/roles/:name/add-rule" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
-              // <LazyRoute path="/k8s/ns/:ns/roles/:name/:rule/edit" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
-            }
+                  <LazyRoute
+                    path="/k8s/all-namespaces/events"
+                    exact
+                    loader={() =>
+                      import('./events').then(m =>
+                        NamespaceFromURL(m.EventStreamPage)
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/events"
+                    exact
+                    loader={() =>
+                      import('./events').then(m =>
+                        NamespaceFromURL(m.EventStreamPage)
+                      )
+                    }
+                  />
+                  <Route
+                    path="/search/all-namespaces"
+                    exact
+                    component={NamespaceFromURL(SearchPage)}
+                  />
+                  <Route
+                    path="/search/ns/:ns"
+                    exact
+                    component={NamespaceFromURL(SearchPage)}
+                  />
+                  <Route
+                    path="/search"
+                    exact
+                    component={ActiveNamespaceRedirect}
+                  />
 
-            <LazyRoute path="/deploy-image" exact loader={() => import('./deploy-image').then(m => m.DeployImage)} />
+                  <LazyRoute
+                    path="/k8s/all-namespaces/import"
+                    exact
+                    loader={() =>
+                      import('./import-yaml').then(m =>
+                        NamespaceFromURL(m.ImportYamlPage)
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/import/"
+                    exact
+                    loader={() =>
+                      import('./import-yaml').then(m =>
+                        NamespaceFromURL(m.ImportYamlPage)
+                      )
+                    }
+                  />
 
-            <LazyRoute path="/k8s/ns/:ns/secrets/new/:type" exact kind="Secret" loader={() => import('./secrets/create-secret' /* webpackChunkName: "create-secret" */).then(m => m.CreateSecret)} />
-            <LazyRoute path="/k8s/ns/:ns/secrets/:name/edit" exact kind="Secret" loader={() => import('./secrets/create-secret' /* webpackChunkName: "create-secret" */).then(m => m.EditSecret)} />
-            <LazyRoute path="/k8s/ns/:ns/secrets/:name/edit-yaml" exact kind="Secret" loader={() => import('./create-yaml').then(m => m.EditYAMLPage)} />
+                  <Route
+                    path="/k8s/ns/:ns/customresourcedefinitions/:plural"
+                    exact
+                    component={ResourceListPage}
+                  />
+                  <Route
+                    path="/k8s/ns/:ns/customresourcedefinitions/:plural/:name"
+                    component={ResourceDetailsPage}
+                  />
+                  <Route
+                    path="/k8s/all-namespaces/customresourcedefinitions/:plural"
+                    exact
+                    component={ResourceListPage}
+                  />
+                  <Route
+                    path="/k8s/all-namespaces/customresourcedefinitions/:plural/:name"
+                    component={ResourceDetailsPage}
+                  />
 
-            <LazyRoute path="/k8s/ns/:ns/routes/new/form" exact kind="Route" loader={() => import('./routes/create-route' /* webpackChunkName: "create-route" */).then(m => m.CreateRoute)} />
+                  {
+                    // These pages are temporarily disabled. We need to update the safe resources list.
+                    // <LazyRoute path="/k8s/cluster/clusterroles/:name/add-rule" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
+                    // <LazyRoute path="/k8s/cluster/clusterroles/:name/:rule/edit" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
+                  }
 
-            <LazyRoute path="/k8s/cluster/rolebindings/new" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.CreateRoleBinding)} kind="RoleBinding" />
-            <LazyRoute path="/k8s/ns/:ns/rolebindings/new" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.CreateRoleBinding)} kind="RoleBinding" />
-            <LazyRoute path="/k8s/ns/:ns/rolebindings/:name/copy" exact kind="RoleBinding" loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.CopyRoleBinding)} />
-            <LazyRoute path="/k8s/ns/:ns/rolebindings/:name/edit" exact kind="RoleBinding" loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRoleBinding)} />
-            <LazyRoute path="/k8s/cluster/clusterrolebindings/:name/copy" exact kind="ClusterRoleBinding" loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.CopyRoleBinding)} />
-            <LazyRoute path="/k8s/cluster/clusterrolebindings/:name/edit" exact kind="ClusterRoleBinding" loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRoleBinding)} />
-            <LazyRoute path="/k8s/ns/:ns/:plural/:name/attach-storage" exact loader={() => import('./storage/attach-storage' /* webpackChunkName: "attach-storage" */).then(m => m.AttachStorage)} />
+                  {
+                    // <LazyRoute path="/k8s/ns/:ns/roles/:name/add-rule" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
+                    // <LazyRoute path="/k8s/ns/:ns/roles/:name/:rule/edit" exact loader={() => import('./RBAC' /* webpackChunkName: "rbac" */).then(m => m.EditRulePage)} />
+                  }
 
-            <Redirect from="/monitoring" exact to="/monitoring/alerts" />
-            <Route path="/monitoring/alerts" exact component={AlertsPage} />
-            <Route path="/monitoring/alerts/:name" exact component={AlertsDetailsPage} />
-            <Route path="/monitoring/alertrules/:name" exact component={AlertRulesDetailsPage} />
-            <Route path="/monitoring/silences" exact component={SilencesPage} />
-            <Route path="/monitoring/silences/new" exact component={CreateSilence} />
-            <Route path="/monitoring/silences/:id" exact component={SilencesDetailsPage} />
-            <Route path="/monitoring/silences/:id/edit" exact component={EditSilence} />
+                  <LazyRoute
+                    path="/deploy-image"
+                    exact
+                    loader={() =>
+                      import('./deploy-image').then(m => m.DeployImage)
+                    }
+                  />
 
-            <Route path="/k8s/cluster/:plural" exact component={ResourceListPage} />
-            <LazyRoute path="/k8s/cluster/:plural/new" exact loader={() => import('./create-yaml' /* webpackChunkName: "create-yaml" */).then(m => m.CreateYAML)} />
-            <Route path="/k8s/cluster/:plural/:name" component={ResourceDetailsPage} />
-            <LazyRoute path="/k8s/ns/:ns/pods/:podName/containers/:name" loader={() => import('./container').then(m => m.ContainersDetailsPage)} />
-            <LazyRoute path="/k8s/ns/:ns/:plural/new" exact loader={() => import('./create-yaml' /* webpackChunkName: "create-yaml" */).then(m => NamespaceFromURL(m.CreateYAML))} />
-            <Route path="/k8s/ns/:ns/:plural/:name" component={ResourceDetailsPage} />
-            <Route path="/k8s/ns/:ns/:plural" exact component={ResourceListPage} />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/secrets/new/:type"
+                    exact
+                    kind="Secret"
+                    loader={() =>
+                      import('./secrets/create-secret' /* webpackChunkName: "create-secret" */).then(
+                        m => m.CreateSecret
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/secrets/:name/edit"
+                    exact
+                    kind="Secret"
+                    loader={() =>
+                      import('./secrets/create-secret' /* webpackChunkName: "create-secret" */).then(
+                        m => m.EditSecret
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/secrets/:name/edit-yaml"
+                    exact
+                    kind="Secret"
+                    loader={() =>
+                      import('./create-yaml').then(m => m.EditYAMLPage)
+                    }
+                  />
 
-            <Route path="/k8s/all-namespaces/:plural" exact component={ResourceListPage} />
-            <Route path="/k8s/all-namespaces/:plural/:name" component={ResourceDetailsPage} />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/routes/new/form"
+                    exact
+                    kind="Route"
+                    loader={() =>
+                      import('./routes/create-route' /* webpackChunkName: "create-route" */).then(
+                        m => m.CreateRoute
+                      )
+                    }
+                  />
 
-            <LazyRoute path="/settings/profile" exact loader={() => import('./profile').then(m => m.ProfilePage)} />
-            <LazyRoute path="/settings/ldap" exact loader={() => import('./cluster-settings/ldap').then(m => m.LDAPPage)} />
-            <LazyRoute path="/settings/cluster" exact loader={() => import('./cluster-settings/cluster-settings').then(m => m.ClusterSettingsPage)} />
+                  <LazyRoute
+                    path="/k8s/cluster/rolebindings/new"
+                    exact
+                    loader={() =>
+                      import('./RBAC' /* webpackChunkName: "rbac" */).then(
+                        m => m.CreateRoleBinding
+                      )
+                    }
+                    kind="RoleBinding"
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/rolebindings/new"
+                    exact
+                    loader={() =>
+                      import('./RBAC' /* webpackChunkName: "rbac" */).then(
+                        m => m.CreateRoleBinding
+                      )
+                    }
+                    kind="RoleBinding"
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/rolebindings/:name/copy"
+                    exact
+                    kind="RoleBinding"
+                    loader={() =>
+                      import('./RBAC' /* webpackChunkName: "rbac" */).then(
+                        m => m.CopyRoleBinding
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/rolebindings/:name/edit"
+                    exact
+                    kind="RoleBinding"
+                    loader={() =>
+                      import('./RBAC' /* webpackChunkName: "rbac" */).then(
+                        m => m.EditRoleBinding
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/cluster/clusterrolebindings/:name/copy"
+                    exact
+                    kind="ClusterRoleBinding"
+                    loader={() =>
+                      import('./RBAC' /* webpackChunkName: "rbac" */).then(
+                        m => m.CopyRoleBinding
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/cluster/clusterrolebindings/:name/edit"
+                    exact
+                    kind="ClusterRoleBinding"
+                    loader={() =>
+                      import('./RBAC' /* webpackChunkName: "rbac" */).then(
+                        m => m.EditRoleBinding
+                      )
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/:plural/:name/attach-storage"
+                    exact
+                    loader={() =>
+                      import('./storage/attach-storage' /* webpackChunkName: "attach-storage" */).then(
+                        m => m.AttachStorage
+                      )
+                    }
+                  />
 
-            <LazyRoute path="/error" exact loader={() => import('./error').then(m => m.ErrorPage)} />
-            <Route path="/" exact component={DefaultPage} />
+                  <Redirect from="/monitoring" exact to="/monitoring/alerts" />
+                  <Route
+                    path="/monitoring/alerts"
+                    exact
+                    component={AlertsPage}
+                  />
+                  <Route
+                    path="/monitoring/alerts/:name"
+                    exact
+                    component={AlertsDetailsPage}
+                  />
+                  <Route
+                    path="/monitoring/alertrules/:name"
+                    exact
+                    component={AlertRulesDetailsPage}
+                  />
+                  <Route
+                    path="/monitoring/silences"
+                    exact
+                    component={SilencesPage}
+                  />
+                  <Route
+                    path="/monitoring/silences/new"
+                    exact
+                    component={CreateSilence}
+                  />
+                  <Route
+                    path="/monitoring/silences/:id"
+                    exact
+                    component={SilencesDetailsPage}
+                  />
+                  <Route
+                    path="/monitoring/silences/:id/edit"
+                    exact
+                    component={EditSilence}
+                  />
 
-            <LazyRoute loader={() => import('./error').then(m => m.ErrorPage404)} />
-          </Switch>
-        </div>
-      </div>
-    </React.Fragment>;
+                  <Route
+                    path="/k8s/cluster/:plural"
+                    exact
+                    component={ResourceListPage}
+                  />
+                  <LazyRoute
+                    path="/k8s/cluster/:plural/new"
+                    exact
+                    loader={() =>
+                      import('./create-yaml' /* webpackChunkName: "create-yaml" */).then(
+                        m => m.CreateYAML
+                      )
+                    }
+                  />
+                  <Route
+                    path="/k8s/cluster/:plural/:name"
+                    component={ResourceDetailsPage}
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/pods/:podName/containers/:name"
+                    loader={() =>
+                      import('./container').then(m => m.ContainersDetailsPage)
+                    }
+                  />
+                  <LazyRoute
+                    path="/k8s/ns/:ns/:plural/new"
+                    exact
+                    loader={() =>
+                      import('./create-yaml' /* webpackChunkName: "create-yaml" */).then(
+                        m => NamespaceFromURL(m.CreateYAML)
+                      )
+                    }
+                  />
+                  <Route
+                    path="/k8s/ns/:ns/:plural/:name"
+                    component={ResourceDetailsPage}
+                  />
+                  <Route
+                    path="/k8s/ns/:ns/:plural"
+                    exact
+                    component={ResourceListPage}
+                  />
+
+                  <Route
+                    path="/k8s/all-namespaces/:plural"
+                    exact
+                    component={ResourceListPage}
+                  />
+                  <Route
+                    path="/k8s/all-namespaces/:plural/:name"
+                    component={ResourceDetailsPage}
+                  />
+
+                  <LazyRoute
+                    path="/settings/profile"
+                    exact
+                    loader={() => import('./profile').then(m => m.ProfilePage)}
+                  />
+                  <LazyRoute
+                    path="/settings/ldap"
+                    exact
+                    loader={() =>
+                      import('./cluster-settings/ldap').then(m => m.LDAPPage)
+                    }
+                  />
+                  <LazyRoute
+                    path="/settings/cluster"
+                    exact
+                    loader={() =>
+                      import('./cluster-settings/cluster-settings').then(
+                        m => m.ClusterSettingsPage
+                      )
+                    }
+                  />
+
+                  <LazyRoute
+                    path="/error"
+                    exact
+                    loader={() => import('./error').then(m => m.ErrorPage)}
+                  />
+                  <Route path="/" exact component={DefaultPage} />
+
+                  <LazyRoute
+                    loader={() => import('./error').then(m => m.ErrorPage404)}
+                  />
+                </Switch>
+              </div>
+            </div>
+          </PageSection>
+        </Page>
+      </React.Fragment>
+    );
   }
 }
 
