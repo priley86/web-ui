@@ -59,13 +59,13 @@ class NavLink extends React.PureComponent {
   }
 
   render() {
-    const { isActive, id, name, onClick } = this.props;
+    const { isActive, isSeparated, id, name, onClick } = this.props;
 
     // onClick is now handled globally by the Nav's onSelect,
     // however onClick can still be passed if desired in certain cases
 
     return (
-      <NavItem isActive={isActive}>
+      <NavItem isActive={isActive} isSeparated={isSeparated}>
         <Link
           id={id}
           to={this.to}
@@ -378,7 +378,7 @@ export const Navigation = ({ isNavOpen, onNavSelect }) => {
           <ResourceNSLink resource="deploymentconfigs" name={DeploymentConfigModel.labelPlural} required={FLAGS.OPENSHIFT} />
           <ResourceNSLink resource="statefulsets" name="Stateful Sets" />
           <ResourceNSLink resource="secrets" name="Secrets" />
-          <ResourceNSLink resource="configmaps" name="Config Maps" />
+          <ResourceNSLink resource="configmaps" name="Config Maps" isSeparated />
           <ResourceNSLink resource="cronjobs" name="Cron Jobs" />
           <ResourceNSLink resource="jobs" name="Jobs" />
           <ResourceNSLink resource="daemonsets" name="Daemon Sets" />

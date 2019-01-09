@@ -11,7 +11,9 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "sourceMap": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "exclude": [
     "node_modules",
