@@ -44,3 +44,15 @@ input[type="number"] {
 input[type="radio"] {
   margin-right: 7px;
 }
+
+// Add specific pf4 base reset for logos/images needed in the brand area. This can be removed later if
+// $pf-global--enable-reset is set true.
+img,
+embed,
+iframe,
+object,
+audio,
+video {
+  max-width: 100%;
+  height: auto;
+}
