@@ -331,7 +331,7 @@ tags-input .autocomplete .suggestion-item em {
   }
 
   .pf-c-nav__item .pf-c-nav__simple-list .pf-c-nav__link {
-    --pf-c-nav__subnav-item--PaddingLeft: var(--pf-c-nav__list-link--PaddingLeft);
+    --pf-c-nav__simple-list-link--PaddingLeft: var(--pf-c-nav__list-link--PaddingLeft);
 
     @media screen and (min-width: $grid-float-breakpoint) {
       --pf-c-nav__subnav-item--PaddingLeft: var(--pf-c-nav__list-link--md--PaddingLeft);
@@ -379,6 +379,17 @@ tags-input .autocomplete .suggestion-item em {
       font-size: 14px;
       line-height: 25px;
 
+      &::after {
+        position: absolute;
+        bottom: 0px;
+        left: 0;
+        width: var(--pf-c-nav__list-link--after--Width);
+        height: var(--pf-c-nav__list-link--after--Height);
+        content: "";
+        background-color: var(--pf-c-nav__list-link--after--BackgroundColor);
+        display: none;
+      }
+      
       &.pf-m-current {
         &::after {
           display: block;
