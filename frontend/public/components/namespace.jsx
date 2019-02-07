@@ -8,7 +8,8 @@ import * as fuzzy from 'fuzzysearch';
 import { NamespaceModel, ProjectModel, SecretModel } from '../models';
 import { k8sGet } from '../module/k8s';
 import { formatNamespacedRouteForResource, UIActions } from '../ui/ui-actions';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow } from './factory';
+import { sortable, headerCol } from '@patternfly/react-table';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table } from './factory';
 import { SafetyFirst } from './safety-first';
 import { ActionsMenu, Kebab, Dropdown, Firehose, LabelList, LoadingInline, navFactory, ResourceKebab, SectionHeading, ResourceIcon, ResourceLink, ResourceSummary, humanizeMem, MsgBox, StatusIcon, ExternalLink } from './utils';
 import { createNamespaceModal, createProjectModal, deleteNamespaceModal, configureNamespacePullSecretModal } from './modals';
@@ -78,6 +79,7 @@ const ProjectHeader = props => <ListHeader>
   <ColHead {...props} className="col-md-3 hidden-sm hidden-xs" sortField="metadata.labels">Labels</ColHead>
 </ListHeader>;
 
+
 const ProjectRow = ({obj: project}) => {
   const name = project.metadata.name;
   const displayName = getDisplayName(project);
@@ -104,6 +106,59 @@ const ProjectRow = ({obj: project}) => {
   </ResourceRow>;
 };
 
+const TableProjectHeader = props => {
+  return [
+    { title: 'Name', sortField: 'metadata.name', transforms: [sortable], cellTransforms: [headerCol()], props },
+    { title: 'Status', sortField: 'status.phase', transforms: [sortable], props },
+    { title: 'Requester', sortField: 'metadata.annotations.[\'openshift.io/requester\']', transforms: [sortable], props },
+    { title: 'Labels', sortField: 'metadata.labels', transforms: [sortable], props },
+    { title: '' },
+  ];
+};
+
+const TableProjectRow = project => {
+  const name = project.metadata.name;
+  const displayName = getDisplayName(project);
+  const requester = getRequester(project);
+  return [
+    {
+      title: <span className="co-resource-link">
+        <ResourceIcon kind="Project" />
+        <Link to={`/overview/ns/${name}`} title={displayName} className="co-resource-link__resource-name">{project.metadata.name}</Link>
+      </span>,
+    },
+    {
+      title: <span><StatusIcon status={project.status.phase} /></span>,
+    },
+    {
+      title: requester || <span className="text-muted">No requester</span>,
+    }, {
+      title: <LabelList kind="Project" labels={project.metadata.labels} />,
+    }, {
+      title: <div className="dropdown-kebab-pf">
+        <ResourceKebab actions={projectMenuActions} kind="Project" resource={project} />
+      </div>,
+    },
+  ];
+};
+
+const TableProjectRows = componentProps => {
+  const rows = [];
+  //this logic will go away once RowWrapper is overridable in PF-R
+  // https://github.com/patternfly/patternfly-react/issues/1310
+  if (!_.isEmpty(componentProps.data)){
+    componentProps.data.forEach((obj) => {
+      const row = TableProjectRow(obj);
+      rows.push(row);
+    });
+  }
+  return rows;
+};
+
+const onSelect = (event, isSelected, virtualRowIndex, rowData) => {
+  console.log(rowData);
+}
+
 const ProjectList_ = props => {
   const ProjectEmptyMessageDetail = <React.Fragment>
     <p className="co-pre-line">
@@ -114,7 +169,12 @@ const ProjectList_ = props => {
     </p>
   </React.Fragment>;
   const ProjectEmptyMessage = () => <MsgBox title="Welcome to OpenShift" detail={ProjectEmptyMessageDetail} />;
-  return <List {...props} Header={ProjectHeader} Row={ProjectRow} EmptyMsg={ProjectEmptyMessage} />;
+  return <React.Fragment>
+    <Table {...props} Header={TableProjectHeader} Rows={TableProjectRows} onSelect={onSelect} />
+    <br />
+    <br />
+    <List {...props} Header={ProjectHeader} Row={ProjectRow} EmptyMsg={ProjectEmptyMessage} />
+  </React.Fragment>;
 };
 export const ProjectList = connect(createProjectMessageStateToProps)(ProjectList_);
 
