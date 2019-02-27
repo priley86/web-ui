@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import * as _ from 'lodash-es';
 import { connect } from 'react-redux';
 import {
   VmStatus,
@@ -9,7 +10,8 @@ import {
   getResource,
 } from 'kubevirt-web-ui-components';
 
-import { ListHeader, ColHead, List, ListPage, ResourceRow } from '../factory/okdfactory';
+import { ListHeader, ColHead, List, ListPage, ResourceRow, Table } from '../factory/okdfactory';
+import { sortable, headerCol } from '@patternfly/react-table';
 import { ResourceLink, ResourceKebab } from '../utils/okdutils';
 import { actions } from '../../module/okdk8s';
 import {
@@ -36,6 +38,71 @@ const VMHeader = props => <ListHeader>
   <ColHead {...props} className={otherRowSize} sortField="metadata.namespace">Namespace</ColHead>
   <ColHead {...props} className={mainRowSize} sortField="spec.running">State</ColHead>
 </ListHeader>;
+
+const VMTableHeader = props => {
+  return [
+    { title: 'Name', sortField: 'metadata.name', transforms: [sortable], cellTransforms: [headerCol()], props},
+    { title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable], props },
+    { title: 'State', sortField: 'metadata.namespace', transforms: [sortable], props },
+    { title: '' },
+  ];
+};
+
+const VMTableRow = (vm) => {
+  const { name, namespace } = vm.metadata;
+  const migrationResources = getResource(VirtualMachineInstanceMigrationModel, {namespace});
+  const resourceMap = {
+    pods: {
+      resource: getResource(PodModel, {namespace, matchLabels: getLabelMatcher(vm)}),
+    },
+    importerPods: {
+      resource: getResource(PodModel, {namespace, matchLabels: {[CDI_KUBEVIRT_IO]: 'importer'}}),
+    },
+    migrations: {
+      resource: migrationResources,
+    },
+  };
+
+  return [
+    {
+      title: <ResourceLink kind={VirtualMachineModel.kind} name={name} namespace={namespace} title={vm.metadata.uid} />,
+    },
+    {
+      title: <ResourceLink kind={NamespaceModel.kind} name={namespace} title={namespace} />,
+    },
+    {
+      title: <WithResources resourceMap={resourceMap}
+        resourceToProps={({ pods, importerPods, migrations }) => ({
+          launcherPod: findPod(pods, name, VIRT_LAUNCHER_POD_PREFIX),
+          importerPods: findImporterPods(importerPods, vm),
+          migration: findVMIMigration(migrations, name),
+        })}
+        loaderComponent={() => DASHES}>
+        <VmStatus vm={vm} />
+      </WithResources>,
+    }, {
+      title: <div className="dropdown-kebab-pf">
+        <ResourceKebab actions={menuActions}
+          kind={VirtualMachineModel.kind}
+          resource={vm}
+          resources={[
+            getResource(VirtualMachineInstanceModel, {name, namespace, isList: false}),
+            migrationResources,
+          ]} />
+      </div>,
+    },
+  ];
+};
+
+const VMTableRows = componentProps => {
+  //this logic will go away once RowWrapper is overridable in PF-R
+  // https://github.com/patternfly/patternfly-react/issues/1310
+  return _.map(componentProps.data, obj => obj && obj.metadata && VMTableRow(obj));
+};
+
+const onSelect = (event, isSelected, rowId) => {
+  console.log(rowId);
+}
 
 const VMRow = ({obj: vm}) => {
 
@@ -83,7 +150,12 @@ const VMRow = ({obj: vm}) => {
   </ResourceRow>;
 };
 
-const VMList = (props) => <List {...props} Header={VMHeader} Row={VMRow} />;
+const VMList = (props) => <React.Fragment>
+  <Table {...props} Header={VMTableHeader} Rows={VMTableRows} onSelect={onSelect} />
+  <br />
+  <br />
+  <List {...props} Header={VMHeader} Row={VMRow} />
+</React.Fragment>;
 
 const mapStateToProps = ({k8s}) => ({
   k8s,
