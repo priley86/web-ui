@@ -90,6 +90,7 @@ const VMTableRow = (vm) => {
             migrationResources,
           ]} />
       </div>,
+      props: { className: 'pf-c-table__action'},
     },
   ];
 };
