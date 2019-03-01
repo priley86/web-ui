@@ -412,3 +412,9 @@ tags-input .autocomplete .suggestion-item em {
     display: none;
   }
 }
+
+.pf-c-table tr > * {
+  --pf-c-table-cell--PaddingTop: 16px; 
+  --pf-c-table-cell--PaddingBottom: 16px;
+  vertical-align: baseline;
+}
