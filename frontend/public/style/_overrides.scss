@@ -418,3 +418,7 @@ tags-input .autocomplete .suggestion-item em {
   --pf-c-table-cell--PaddingBottom: 16px;
   vertical-align: baseline;
 }
+
+.pf-c-table tbody tr td div {
+  white-space: nowrap;
+}
