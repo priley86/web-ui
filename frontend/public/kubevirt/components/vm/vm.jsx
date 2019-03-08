@@ -43,7 +43,7 @@ const VMTableHeader = props => {
   return [
     { title: 'Name', sortField: 'metadata.name', transforms: [sortable], cellTransforms: [headerCol()], props},
     { title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable], props },
-    { title: 'State', sortField: 'metadata.namespace', transforms: [sortable], props },
+    { title: 'State', sortField: 'spec.running', transforms: [sortable], props },
     { title: '' },
   ];
 };

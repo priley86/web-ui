@@ -294,17 +294,67 @@ const stateToProps = ({UI}, {data = [], defaultSortField = 'metadata.name', defa
       onSelect: PropTypes.func
     };
 
-     render() {
-      const {currentSortField, currentSortFunc, currentSortOrder, expand, Header, Rows, label, listId, mock, sortList, onSelect} = this.props;
-      const componentProps: any = _.pick(this.props, ['data', 'filters', 'selected', 'match', 'kindObj']);
+    constructor(props){
+      super(props);
+      const componentProps: any = _.pick(props, ['data', 'filters', 'selected', 'match', 'kindObj']);
+      const columns = props.Header(componentProps);
+      //sort by first column 
+      this.state = {
+        columns: columns,
+        sortBy: {}
+      };
+      this._applySort = this._applySort.bind(this);
+      this._onSort = this._onSort.bind(this);
+    }
 
-       const columns = Header(componentProps);
+    componentDidMount(){
+      const {columns} = this.state;
+      const sp = new URLSearchParams(window.location.search);
+      const columnIndex = _.findIndex(columns, {title: sp.get('sortBy')});
+
+      if(columnIndex > -1){
+        const sortOrder = sp.get('orderBy') || 'asc';
+        const column = columns[columnIndex];
+        this._applySort(column.sortField, sortOrder, column.title);
+        this.setState({
+          sortBy: {
+            index: columnIndex+1,
+            direction: sortOrder
+          }
+        })
+      }
+    }
+
+    _applySort(sortField, direction, columnTitle){
+      const {sortList, listId, currentSortFunc} = this.props;
+      const applySort =  _.partial(sortList, listId);
+      applySort(sortField, currentSortFunc, direction, columnTitle);
+    }
+
+    _onSort(_event, index, direction){
+      const sortColumn = this.state.columns[index-1];
+
+      this._applySort(sortColumn.sortField, direction, sortColumn.title);
+
+      this.setState({
+        sortBy: {
+          index: index,
+          direction: direction
+        }
+      });
+    }
+
+     render() {
+       //todo: handle expand
+      const {expand, Rows, label, onSelect} = this.props;
+      const {sortBy, columns} = this.state;
+      const componentProps: any = _.pick(this.props, ['data', 'filters', 'selected', 'match', 'kindObj']);
       const rows = Rows(componentProps);
 
        return rows ? (
-          <PfTable cells={columns} rows={rows} onSelect={onSelect}>
+          <PfTable cells={columns} rows={rows} onSelect={onSelect} sortBy={sortBy} onSort={this._onSort}>
             <TableHeader />
-            <TableBody />
+            <TableBody /> 
           </PfTable>
         ) : <EmptyBox label={label} />;
     }
