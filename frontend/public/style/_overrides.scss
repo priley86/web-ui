@@ -448,3 +448,11 @@ tags-input .autocomplete .suggestion-item em {
     display: none;
   }
 }
+
+.pf-c-table tr > * {
+  vertical-align: baseline;
+}
+
+.pf-c-table tbody tr td div {
+  white-space: nowrap;
+}
