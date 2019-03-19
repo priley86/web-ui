@@ -82,6 +82,10 @@ export const types = {
   stopImpersonate: 'stopImpersonate',
   updateOverviewMetrics: 'updateOverviewMetrics',
   updateOverviewResources: 'updateOverviewResources',
+  selectResource: 'selectResource',
+  selectResources: 'selectResources',
+  unselectResource: 'unselectResource',
+  unselectResources: 'unselectResources',
 };
 
 /** @type {{[key: string]: function}} */
@@ -188,4 +192,9 @@ export const UIActions = {
   monitoringLoaded: (key, data) => ({type: types.setMonitoringData, key, data: {loaded: true, loadError: null, data}}),
 
   monitoringErrored: (key, loadError) => ({type: types.setMonitoringData, key, data: {loaded: true, loadError, data: null}}),
+
+  [types.selectResource]: (kind, selectedResource) => ({type: types.selectResource, kind, selectedResource}),
+  [types.selectResources]: (kind, selectedResources) => ({type: types.selectResources, kind, selectedResources}),
+  [types.unselectResource]: (kind, unselectedResource) => ({type: types.unselectResource, kind, unselectedResource}),
+  [types.unselectResources]: (kind, unselectedResources) => ({type: types.unselectResources, kind, unselectedResources}),
 };

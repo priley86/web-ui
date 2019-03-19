@@ -1,5 +1,5 @@
 import * as _ from 'lodash-es';
-import { Map as ImmutableMap } from 'immutable';
+import { Map as ImmutableMap, Set as ImmutableSet } from 'immutable';
 
 import { types } from './ui-actions';
 import { ALL_NAMESPACES_KEY, LAST_NAMESPACE_NAME_LOCAL_STORAGE_KEY, NAMESPACE_LOCAL_STORAGE_KEY } from '../const';
@@ -32,6 +32,7 @@ export default (state, action) => {
         selectedUID: '',
         selectedView: 'resources',
       }),
+      selectedResources: new ImmutableMap(),
       user: {},
       clusterID: '',
     });
@@ -107,6 +108,26 @@ export default (state, action) => {
     case types.selectOverviewDetailsTab:
       return state.setIn(['overview', 'selectedDetailsTab'], action.tab);
 
+    case types.selectResource: {
+      const selectedResourcesForKind = state.getIn(['selectedResources', action.kind]) || new ImmutableSet();
+      return state.setIn(['selectedResources', action.kind],
+        selectedResourcesForKind.add(action.selectedResource));
+    }
+    case types.unselectResource: {
+      const selectedResourcesForKind = state.getIn(['selectedResources', action.kind]) || new ImmutableSet();
+      return state.setIn(['selectedResources', action.kind],
+        selectedResourcesForKind.delete(action.unselectedResource));
+    }
+    case types.selectResources: {
+      const selectedResourcesForKind = state.getIn(['selectedResources', action.kind]) || new ImmutableSet();
+      const newSelectedResources = new ImmutableSet(action.selectedResources);
+      return state.setIn(['selectedResources', action.kind], selectedResourcesForKind.union(newSelectedResources));
+    }
+    case types.unselectResources: {
+      const selectedResourcesForKind = state.getIn(['selectedResources', action.kind]) || new ImmutableSet();
+      const unselectedResources = new ImmutableSet(action.unselectedResources);
+      return state.setIn(['selectedResources', action.kind], selectedResourcesForKind.subtract(unselectedResources));
+    }
     case types.dismissOverviewDetails:
       return state.mergeIn(['overview'], {selectedUID: '', selectedDetailsTab: ''});
 

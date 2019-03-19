@@ -34,7 +34,7 @@ import {
 
 import { getVmStatus } from 'kubevirt-web-ui-components';
 
-import { Table as PfTable, TableHeader, TableBody, SortByDirection } from '@patternfly/react-table';
+import { Table as PfTable, TableHeader, TableBody, SortByDirection, IRowData, IExtraData } from '@patternfly/react-table';
 
 const fuzzyCaseInsensitive = (a, b) => fuzzy(_.toLower(a), _.toLower(b));
 
@@ -345,10 +345,10 @@ const stateToProps = ({UI}, {data = [], defaultSortField = 'metadata.name', defa
 
      render() {
        //todo: handle expand
-      const {expand, Rows, label, onSelect} = this.props;
+      const {expand, Rows, label, onSelect, selectedResourcesForKind} = this.props;
       const {sortBy, columns} = this.state;
       const componentProps: any = _.pick(this.props, ['data', 'filters', 'selected', 'match', 'kindObj']);
-      const rows = Rows(componentProps);
+      const rows = Rows(componentProps, selectedResourcesForKind);
 
        return rows ? (
           <PfTable cells={columns} rows={rows} onSelect={onSelect} sortBy={sortBy} 
@@ -385,7 +385,8 @@ const stateToProps = ({UI}, {data = [], defaultSortField = 'metadata.name', defa
   Rows: (...args)=> any;
   selector?: Object;
   sortList?: (...args) => any;
-  onSelect?: (...args) => any;
+  selectedResourcesForKind?: string[];
+  onSelect?: (event: React.MouseEvent, isSelected: boolean, rowIndex: number, rowData: IRowData, extraData: IExtraData) => void;
   staticFilters?: any[];
   virtualize?: boolean;
 };

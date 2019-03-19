@@ -9,12 +9,15 @@ import {
   CDI_KUBEVIRT_IO,
   getResource,
 } from 'kubevirt-web-ui-components';
+import { Set as ImmutableSet } from 'immutable';
 
 import { ListHeader, ColHead, List, ListPage, ResourceRow, Table } from '../factory/okdfactory';
 import { sortable, headerCol } from '@patternfly/react-table';
 
 import { ResourceLink, ResourceKebab } from '../utils/okdutils';
 import { actions } from '../../module/okdk8s';
+import { referenceForModel } from '../../../module/k8s';
+import { UIActions } from '../../../ui/ui-actions';
 import {
   VirtualMachineInstanceModel,
   VirtualMachineModel,
@@ -30,6 +33,8 @@ import { DASHES, VIRT_LAUNCHER_POD_PREFIX } from '../utils/constants';
 import { openCreateVmWizard } from '../modals/create-vm-modal';
 import { menuActions } from './menu-actions';
 import { WithResources } from '../utils/withResources';
+
+const virtualMachineReference = referenceForModel(VirtualMachineModel);
 
 const mainRowSize = 'col-lg-4 col-md-4 col-sm-6 col-xs-6';
 const otherRowSize = 'col-lg-4 col-md-4 hidden-sm hidden-xs';
@@ -93,15 +98,21 @@ const VMTableRow = (vm) => {
     },
   ];
 };
-const VMTableRows = componentProps => {
-  //this logic will go away once RowWrapper is overridable in PF-R
-  // https://github.com/patternfly/patternfly-react/issues/1310
-  return _.map(componentProps.data, obj => obj && obj.metadata && VMTableRow(obj));
-};
 
-const onSelect = (event, isSelected, rowId) => {
-  console.log(rowId);
-}
+const VMTableRows = (componentProps, selectedResourcesForKind) => {
+  return _.map(componentProps.data, obj => {
+    if (obj && obj.metadata){
+      const cells = VMTableRow(obj);
+      const uid = obj.metadata.uid;
+      const selected = selectedResourcesForKind.has(uid);
+      return {
+        selected,
+        cells,
+        uid,
+      };
+    }
+  });
+};
 
 const VMRow = ({obj: vm}) => {
 
@@ -149,14 +160,53 @@ const VMRow = ({obj: vm}) => {
   </ResourceRow>;
 };
 
-const VMList = (props) => <React.Fragment>
-  <Table {...props} Header={VMTableHeader} Rows={VMTableRows} onSelect={onSelect} />
-  <br />
-  <br />
-  <List {...props} Header={VMHeader} Row={VMRow} />
-</React.Fragment>;
+const mapVMListStateToProps = ({UI}) => ({
+  selectedResourcesForKind: UI.getIn(['selectedResources', virtualMachineReference], new ImmutableSet()),
+});
 
-const mapStateToProps = ({k8s}) => ({
+const mapVMListDispatchToProps = (dispatch) => ({
+  selectResource: (kind, uid) => dispatch(UIActions.selectResource(kind, uid)),
+  unselectResource: (kind, uid) => dispatch(UIActions.unselectResource(kind, uid)),
+  selectResources: (kind, uids) => dispatch(UIActions.selectResources(kind, uids)),
+  unselectResources: (kind, uids) => dispatch(UIActions.unselectResources(kind, uids)),
+});
+
+const VMList = connect(
+  mapVMListStateToProps, mapVMListDispatchToProps)(class VMListInner extends Component {
+
+  constructor(props){
+    super(props);
+    this._onSelect = this._onSelect.bind(this);
+  }
+
+  _onSelect(event, isSelected, rowIndex, rowData){
+    const {selectResource, unselectResource, selectResources, unselectResources, data} = this.props;
+
+    if (rowIndex === -1){ //select/unselect all clicked
+      const uids = _.map(data, 'metadata.uid');
+      return isSelected ? selectResources(virtualMachineReference, uids) : unselectResources(virtualMachineReference, uids);
+    } else if (rowData && rowData.uid){
+      return isSelected ? selectResource(virtualMachineReference, rowData.uid) : unselectResource(virtualMachineReference, rowData.uid);
+    }
+  }
+
+  render(){
+    const {selectedResourcesForKind} = this.props;
+
+    return (
+      <React.Fragment>
+        <Table {...this.props} Header={VMTableHeader} Rows={VMTableRows}
+          selectedResourcesForKind={selectedResourcesForKind} onSelect={this._onSelect} />
+        <br />
+        <br />
+        <List {...this.props} Header={VMHeader} Row={VMRow} />
+      </React.Fragment>
+    );
+  }
+});
+
+const mapStateToProps = ({UI},{k8s}) => ({
+  UI,
   k8s,
 });
 
