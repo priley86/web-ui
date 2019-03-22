@@ -385,7 +385,7 @@ const stateToProps = ({UI}, {data = [], defaultSortField = 'metadata.name', defa
   Row: React.ComponentType<any>;
   Rows: (...args)=> any;
   selector?: Object;
-  sortList?: (...args) => any;
+  sortList?: (listId: string, field: string, func: any, orderBy: string, column: string) => any;
   selectedResourcesForKind?: string[];
   onSelect?: (event: React.MouseEvent, isSelected: boolean, rowIndex: number, rowData: IRowData, extraData: IExtraData) => void;
   staticFilters?: any[];
