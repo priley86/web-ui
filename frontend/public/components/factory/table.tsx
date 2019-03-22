@@ -345,14 +345,14 @@ const stateToProps = ({UI}, {data = [], defaultSortField = 'metadata.name', defa
 
      render() {
        //todo: handle expand
-      const {expand, Rows, label, onSelect, selectedResourcesForKind} = this.props;
+      const {expand, Rows, label, onSelect, selectedResourcesForKind, 'aria-label': ariaLabel} = this.props;
       const {sortBy, columns} = this.state;
       const componentProps: any = _.pick(this.props, ['data', 'filters', 'selected', 'match', 'kindObj']);
       const rows = Rows(componentProps, selectedResourcesForKind);
 
        return rows ? (
           <PfTable cells={columns} rows={rows} onSelect={onSelect} sortBy={sortBy} 
-              onSort={this._onSort} className="pf-m-compact pf-m-border-rows">
+              onSort={this._onSort} className="pf-m-compact pf-m-border-rows" aria-label={ariaLabel}>
             <TableHeader />
             <TableBody /> 
           </PfTable>
@@ -362,6 +362,7 @@ const stateToProps = ({UI}, {data = [], defaultSortField = 'metadata.name', defa
 
 
  export type TableInnerProps = {
+  'aria-label': string;
   currentSortField?: string;
   currentSortFunc?: string;
   currentSortOrder?: any;

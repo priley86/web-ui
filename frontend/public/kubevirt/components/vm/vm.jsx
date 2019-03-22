@@ -196,7 +196,8 @@ const VMList = connect(
     return (
       <React.Fragment>
         <Table {...this.props} Header={VMTableHeader} Rows={VMTableRows}
-          selectedResourcesForKind={selectedResourcesForKind} onSelect={this._onSelect} />
+          selectedResourcesForKind={selectedResourcesForKind} onSelect={this._onSelect} 
+          aria-label="Virtual Machines List" />
         <br />
         <br />
         <List {...this.props} Header={VMHeader} Row={VMRow} />
