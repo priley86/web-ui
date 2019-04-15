@@ -1,9 +1,10 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
-
+import { sortable } from '@patternfly/react-table';
+import * as classNames from 'classnames';
 import { MachineAutoscalerModel } from '../models';
 import { groupVersionFor, K8sResourceKind, referenceForGroupVersionKind, referenceForModel } from '../module/k8s';
-import { ColHead, DetailsPage, List, ListHeader, ListPage } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
 import {
   Kebab,
   navFactory,
@@ -30,6 +31,15 @@ const MachineAutoscalerTargetLink: React.FC<MachineAutoscalerTargetLinkProps> = 
   return <ResourceLink kind={reference} name={targetName} namespace={obj.metadata.namespace} />;
 };
 
+const tableColumnClasses = [
+  classNames('pf-m-4-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-1-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-1-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  Kebab.columnClass,
+];
+
 const MachineAutoscalerHeader: React.FC = props => <ListHeader>
   <ColHead {...props} className="col-md-4 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-md-3 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
@@ -37,6 +47,36 @@ const MachineAutoscalerHeader: React.FC = props => <ListHeader>
   <ColHead {...props} className="col-md-1 hidden-sm hidden-xs" sortField="spec.minReplicas">Min</ColHead>
   <ColHead {...props} className="col-md-1 hidden-sm hidden-xs" sortField="spec.maxReplicas">Max</ColHead>
 </ListHeader>;
+
+export const MachineAutoscalerTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Scale Target', sortField: 'spec.scaleTargetRef.name', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Min', sortField: 'spec.minReplicas', transforms: [sortable],
+      props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Max', sortField: 'spec.maxReplicas', transforms: [sortable],
+      props: { className: tableColumnClasses[4]},
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[5]},
+    },
+  ];
+};
+MachineAutoscalerTableHeader.displayName = 'MachineAutoscalerTableHeader';
 
 const MachineAutoscalerRow: React.FC<MachineAutoscalerRowProps> = ({obj}) => <div className="row co-resource-list__item">
   <div className="col-md-4 col-sm-4 col-xs-6">
@@ -59,12 +99,51 @@ const MachineAutoscalerRow: React.FC<MachineAutoscalerRowProps> = ({obj}) => <di
   </div>
 </div>;
 
-const MachineAutoscalerList: React.FC = props =>
-  <List
+export const MachineAutoscalerTableRow: React.FC<MachineAutoscalerTableRowProps> = ({obj, index, key, style}) => {
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={machineAutoscalerReference} name={obj.metadata.name} namespace={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        <ResourceLink kind="Namespace" name={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[2], 'co-break-word')}>
+        <MachineAutoscalerTargetLink obj={obj} />
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        {_.get(obj, 'spec.minReplicas') || '-'}
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>
+        {_.get(obj, 'spec.maxReplicas') || '-'}
+      </Vd>
+      <Vd className={tableColumnClasses[5]}>
+        <ResourceKebab actions={menuActions} kind={machineAutoscalerReference} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+MachineAutoscalerTableRow.displayName = 'MachineAutoscalerTableRow';
+export type MachineAutoscalerTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
+};
+
+const MachineAutoscalerList: React.FC = props => <React.Fragment>
+  <Table
+    {...props}
+    aria-label="Machine Autoscalers"
+    Header={MachineAutoscalerTableHeader}
+    Row={MachineAutoscalerTableRow}
+    virtualize />
+  {false && <List
     {...props}
     Header={MachineAutoscalerHeader}
     Row={MachineAutoscalerRow}
-  />;
+  />}
+</React.Fragment>;
 
 const MachineAutoscalerDetails: React.FC<MachineAutoscalerDetailsProps> = ({obj}) => {
   return <React.Fragment>

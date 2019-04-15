@@ -1,9 +1,10 @@
 import * as _ from 'lodash-es';
 import * as React from 'react';
+import * as classNames from 'classnames';
 import { Popover } from '@patternfly/react-core';
+import { sortable } from '@patternfly/react-table';
 import { QuestionCircleIcon } from '@patternfly/react-icons';
-
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
 import { Kebab, CopyToClipboard, SectionHeading, ResourceKebab, detailsPage, navFactory, ResourceLink, ResourceSummary, StatusIconAndText, ExternalLink } from './utils';
 import { MaskedData } from './configmap-and-secret-data';
 import { K8sResourceKind, K8sResourceKindReference } from '../module/k8s';
@@ -107,6 +108,17 @@ export const RouteStatus: React.SFC<RouteStatusProps> = ({obj: route}) => {
 };
 RouteStatus.displayName = 'RouteStatus';
 
+const tableColumnClasses = [
+  classNames('pf-m-3-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-3-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
+  Kebab.columnClass,
+];
+
+const kind = 'Route';
+
 const RouteListHeader: React.SFC<RouteHeaderProps> = props => <ListHeader>
   <ColHead {...props} className="col-lg-3 col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
@@ -114,6 +126,35 @@ const RouteListHeader: React.SFC<RouteHeaderProps> = props => <ListHeader>
   <ColHead {...props} className="col-lg-2 col-md-3 hidden-sm hidden-xs" sortField="spec.to.name">Service</ColHead>
   <ColHead {...props} className="col-lg-2 hidden-md hidden-sm hidden-xs">Status</ColHead>
 </ListHeader>;
+
+export const RouteTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Location', sortField: 'spec.host', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Service', sortField: 'spec.to.name', transforms: [sortable],
+      props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Status',
+      props: { className: tableColumnClasses[4]},
+    },
+    { title: '',
+      props: { className: tableColumnClasses[5]},
+    },
+  ];
+};
+RouteTableHeader.displayName = 'RouteTableHeader';
 
 const RouteListRow: React.SFC<RoutesRowProps> = ({obj: route}) => <ResourceRow obj={route}>
   <div className="col-lg-3 col-md-3 col-sm-4 col-xs-6">
@@ -134,6 +175,39 @@ const RouteListRow: React.SFC<RoutesRowProps> = ({obj: route}) => <ResourceRow o
     <ResourceKebab actions={menuActions} kind="Route" resource={route} />
   </div>
 </ResourceRow>;
+
+const RouteTableRow: React.FC<RouteTableRowProps> = ({obj: route, index, key, style}) => {
+  return (
+    <Vr id={route.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={kind} name={route.metadata.name}
+          namespace={route.metadata.namespace} title={route.metadata.uid} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        <ResourceLink kind="Namespace" name={route.metadata.namespace} title={route.metadata.namespace} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[2], 'co-break-word')}>
+        <RouteLocation obj={route} />
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        <ResourceLink kind="Service" name={route.spec.to.name} namespace={route.metadata.namespace} title={route.spec.to.name} />
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>
+        <RouteStatus obj={route} />
+      </Vd>
+      <Vd className={tableColumnClasses[5]}>
+        <ResourceKebab actions={menuActions} kind={kind} resource={route} />
+      </Vd>
+    </Vr>
+  );
+};
+RouteTableRow.displayName = 'RouteTableRow';
+export type RouteTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
+};
 
 class TLSSettings extends React.Component<TLSDataProps, TLSDataState> {
   constructor(props) {
@@ -338,7 +412,10 @@ export const RoutesDetailsPage: React.SFC<RoutesDetailsPageProps> = props => <De
   menuActions={menuActions}
   pages={[navFactory.details(detailsPage(RouteDetails)), navFactory.editYaml()]}
 />;
-export const RoutesList: React.SFC = props => <List {...props} Header={RouteListHeader} Row={RouteListRow} />;
+export const RoutesList: React.SFC = props => <React.Fragment>
+  <Table {...props} aria-label="Routes" Header={RouteTableHeader} Row={RouteTableRow} virtualize />
+  {false && <List {...props} Header={RouteListHeader} Row={RouteListRow} />}
+</React.Fragment>;
 
 const filters = [{
   type: 'route-status',

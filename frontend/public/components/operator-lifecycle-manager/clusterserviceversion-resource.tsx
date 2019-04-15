@@ -2,7 +2,8 @@ import * as React from 'react';
 import { Link, match } from 'react-router-dom';
 import * as _ from 'lodash-es';
 import { connect } from 'react-redux';
-
+import * as classNames from 'classnames';
+import { sortable } from '@patternfly/react-table';
 import { ClusterServiceVersionResourceKind, ClusterServiceVersionKind, referenceForProvidedAPI } from './index';
 import { StatusDescriptor } from './descriptors/status';
 import { SpecDescriptor } from './descriptors/spec';
@@ -10,8 +11,8 @@ import { SpecDescriptor } from './descriptors/spec';
 import { StatusCapability, Descriptor } from './descriptors/types';
 import { Resources } from './k8s-resource';
 import { ErrorPage404 } from '../error';
-import { List, MultiListPage, ListPage, ListHeader, ColHead, DetailsPage, CompactExpandButtons } from '../factory';
-import { ResourceLink, ResourceSummary, StatusBox, navFactory, Timestamp, LabelList, ResourceIcon, MsgBox, ResourceKebab, KebabAction, LoadingBox } from '../utils';
+import { MultiListPage, ListPage, ListHeader, ColHead, DetailsPage, CompactExpandButtons, Table, Vr, Vd } from '../factory';
+import { ResourceLink, ResourceSummary, StatusBox, navFactory, Timestamp, LabelList, ResourceIcon, MsgBox, ResourceKebab, Kebab, KebabAction, LoadingBox } from '../utils';
 import { connectToModel } from '../../kinds';
 import { kindForReference, K8sResourceKind, OwnerReference, K8sKind, referenceFor, GroupVersionKind, referenceForModel } from '../../module/k8s';
 import { ClusterServiceVersionModel } from '../../models';
@@ -49,6 +50,16 @@ const actions = [
   }),
 ] as KebabAction[];
 
+const tableColumnClasses = [
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
+  Kebab.columnClass,
+];
+
 export const ClusterServiceVersionResourceHeader: React.SFC<ClusterServiceVersionResourceHeaderProps> = (props) => <ListHeader>
   <ColHead {...props} className="col-xs-6 col-sm-4 col-md-3 col-lg-2" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-xs-6 col-sm-4 col-md-3 col-lg-2" sortField="metadata.labels">Labels</ColHead>
@@ -57,6 +68,36 @@ export const ClusterServiceVersionResourceHeader: React.SFC<ClusterServiceVersio
   <ColHead {...props} className="hidden-xs hidden-sm hidden-md col-lg-2">Version</ColHead>
   <ColHead {...props} className="hidden-xs hidden-sm hidden-md col-lg-2">Last Updated</ColHead>
 </ListHeader>;
+
+export const CSVRTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Labels', sortField: 'metadata.labels', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Type', sortField: 'kind', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Status', props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Version', props: { className: tableColumnClasses[4]},
+    },
+    {
+      title: 'Last Updated', props: { className: tableColumnClasses[5]},
+    },
+    {
+      title: '', props: { className: tableColumnClasses[6]},
+    },
+  ];
+};
+CSVRTableHeader.displayName = 'CSVRTableHeader';
 
 export const ClusterServiceVersionResourceLink: React.SFC<ClusterServiceVersionResourceLinkProps> = (props) => {
   const {namespace, name} = props.obj.metadata;
@@ -95,17 +136,59 @@ export const ClusterServiceVersionResourceRow: React.SFC<ClusterServiceVersionRe
   </div>;
 };
 
+export const CSVRTableRow: React.FC<CSVRTableRowProps> = ({obj, index, key, style}) => {
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ClusterServiceVersionResourceLink obj={obj} />
+      </Vd>
+      <Vd className={tableColumnClasses[1]}>
+        <LabelList kind={obj.kind} labels={obj.metadata.labels} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[2], 'co-break-word')}>
+        {obj.kind}
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        {_.get(obj.status, 'phase') || <div className="text-muted">Unknown</div>}
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>
+        {_.get(obj.spec, 'version') || <div className="text-muted">Unknown</div>}
+      </Vd>
+      <Vd className={tableColumnClasses[5]}>
+        <Timestamp timestamp={obj.metadata.creationTimestamp} />
+      </Vd>
+      <Vd className={tableColumnClasses[6]}>
+        <ResourceKebab actions={actions} kind={referenceFor(obj)} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+CSVRTableRow.displayName = 'CSVRTableRow';
+export type CSVRTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
+};
+
 export const ClusterServiceVersionResourceList: React.SFC<ClusterServiceVersionResourceListProps> = (props) => {
   const ensureKind = (data: K8sResourceKind[]) => data.map(obj => ({kind: obj.kind || props.kinds[0], ...obj}));
   const EmptyMsg = () => <MsgBox title="No Application Resources Found" detail="Application resources are declarative components used to define the behavior of the application." />;
 
-  return <List
-    {...props}
+  return <Table {...props}
     data={ensureKind(props.data)}
     EmptyMsg={EmptyMsg}
-    Header={ClusterServiceVersionResourceHeader}
-    Row={ClusterServiceVersionResourceRow}
-    label="Application Resources" />;
+    aria-label="Cluster Operators"
+    Header={CSVRTableHeader}
+    Row={CSVRTableRow}
+    virtualize />;
+  // <List
+  // {...props}
+  // data={ensureKind(props.data)}
+  // EmptyMsg={EmptyMsg}
+  // Header={ClusterServiceVersionResourceHeader}
+  // Row={ClusterServiceVersionResourceRow}
+  // label="Application Resources" />
 };
 
 const inFlightStateToProps = ({k8s}) => ({inFlight: k8s.getIn(['RESOURCES', 'inFlight'])});

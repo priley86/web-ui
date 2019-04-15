@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-
+import * as classNames from 'classnames';
+import { sortable } from '@patternfly/react-table';
 import { getJobTypeAndCompletions } from '../module/k8s';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
 import { configureJobParallelismModal } from './modals';
 import { Kebab, ContainerTable, SectionHeading, LabelList, ResourceKebab, ResourceLink, ResourceSummary, Timestamp, navFactory, StatusIconAndText } from './utils';
 import { ResourceEventStream } from './events';
@@ -23,6 +24,17 @@ const ModifyJobParallelism = (kind, obj) => ({
 });
 const menuActions = [ModifyJobParallelism, ...Kebab.factory.common];
 
+const kind = 'Job';
+
+const tableColumnClasses = [
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-4-col-on-xl', 'pf-m-4-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-2-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
+  Kebab.columnClass,
+];
+
 const JobHeader = props => <ListHeader>
   <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
@@ -30,6 +42,35 @@ const JobHeader = props => <ListHeader>
   <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortFunc="jobCompletions">Completions</ColHead>
   <ColHead {...props} className="col-lg-2 hidden-md hidden-sm hidden-xs" sortFunc="jobType">Type</ColHead>
 </ListHeader>;
+
+export const JobTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Labels', sortField: 'metadata.labels', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Completions', sortFunc: 'jobCompletions', transforms: [sortable],
+      props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Type', sortFunc: 'jobType', transforms: [sortable],
+      props: { className: tableColumnClasses[4]},
+    },
+    { title: '',
+      props: { className: tableColumnClasses[5]},
+    },
+  ];
+};
+JobTableHeader.displayName = 'JobTableHeader';
 
 const JobRow = ({obj: job}) => {
   const {type, completions} = getJobTypeAndCompletions(job);
@@ -58,6 +99,32 @@ const JobRow = ({obj: job}) => {
     </ResourceRow>
   );
 };
+const JobTableRow = ({obj: job, index, key, style}) => {
+  const {type, completions} = getJobTypeAndCompletions(job);
+  return (
+    <Vr id={job.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={kind} name={job.metadata.name} namespace={job.metadata.namespace} title={job.metadata.uid} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        <ResourceLink kind="Namespace" name={job.metadata.namespace} title={job.metadata.namespace} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        <LabelList kind={kind} labels={job.metadata.labels} />
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        <Link to={`/k8s/ns/${job.metadata.namespace}/jobs/${job.metadata.name}/pods`} title="pods">
+          {job.status.succeeded || 0} of {completions}
+        </Link>
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>{type}</Vd>
+      <Vd className={tableColumnClasses[5]}>
+        <ResourceKebab actions={menuActions} kind="Job" resource={job} />
+      </Vd>
+    </Vr>
+  );
+};
+JobTableRow.displayName = 'JobTableRow';
 
 const Details = ({obj: job}) => <React.Fragment>
   <div className="co-m-pane__body">
@@ -104,6 +171,9 @@ const JobsDetailsPage = props => <DetailsPage
   menuActions={menuActions}
   pages={[details(Details), editYaml(), pods(), events(ResourceEventStream)]}
 />;
-const JobsList = props => <List {...props} Header={JobHeader} Row={JobRow} />;
+const JobsList = props => <React.Fragment>
+  <Table {...props} aria-label="Jobs" Header={JobTableHeader} Row={JobTableRow} virtualize />
+  {false && <List {...props} Header={JobHeader} Row={JobRow} /> }
+</React.Fragment>;
 const JobsPage = props => <ListPage ListComponent={JobsList} canCreate={true} {...props} />;
 export {JobsList, JobsPage, JobsDetailsPage};

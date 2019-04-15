@@ -2,10 +2,11 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import * as fuzzy from 'fuzzysearch';
 // import { Link } from 'react-router-dom';
-
+import * as classNames from 'classnames';
+import { sortable } from '@patternfly/react-table';
 import { flatten as bindingsFlatten } from './bindings';
 import { BindingName, BindingsList, RulesList } from './index';
-import { ColHead, DetailsPage, List, ListHeader, MultiListPage, ResourceRow, TextFilter } from '../factory';
+import { ColHead, DetailsPage, List, ListHeader, MultiListPage, ResourceRow, TextFilter, Table, Vr, Vd } from '../factory';
 import { Kebab, SectionHeading, MsgBox, navFactory, ResourceKebab, ResourceLink, Timestamp } from '../utils';
 
 export const isSystemRole = role => _.startsWith(role.metadata.name, 'system:');
@@ -28,10 +29,31 @@ const menuActions = [
   Kebab.factory.Delete,
 ];
 
+const roleColumnClasses = [
+  classNames('pf-m-6-col-on-sm'),
+  classNames('pf-m-6-col-on-sm'),
+  Kebab.columnClass,
+];
+
 const Header = props => <ListHeader>
   <ColHead {...props} className="col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
 </ListHeader>;
+
+export const RolesTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: roleColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: roleColumnClasses[1]},
+    },
+    { title: '', props: { className: roleColumnClasses[2]}},
+  ];
+};
+RolesTableHeader.displayName = 'RolesTableHeader';
 
 const Row = ({obj: role}) => <div className="row co-resource-list__item">
   <div className="col-xs-6">
@@ -44,6 +66,23 @@ const Row = ({obj: role}) => <div className="row co-resource-list__item">
     <ResourceKebab actions={menuActions} kind={roleKind(role)} resource={role} />
   </div>
 </div>;
+
+const RolesTableRow = ({obj: role, index, key, style}) => {
+  return (
+    <Vr id={role.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={roleColumnClasses[0]}>
+        <ResourceLink kind={roleKind(role)} name={role.metadata.name} namespace={role.metadata.namespace} />
+      </Vd>
+      <Vd className={classNames(roleColumnClasses[1], 'co-break-word')}>
+        {role.metadata.namespace ? <ResourceLink kind="Namespace" name={role.metadata.namespace} /> : 'all'}
+      </Vd>
+      <Vd className={roleColumnClasses[2]}>
+        <ResourceKebab actions={menuActions} kind={roleKind(role)} resource={role} />
+      </Vd>
+    </Vr>
+  );
+};
+RolesTableRow.displayName = 'RolesTableRow';
 
 class Details extends React.Component {
   constructor(props) {
@@ -106,12 +145,40 @@ class Details extends React.Component {
   }
 }
 
+const bindingsColumnClasses = [
+  classNames('pf-m-4-col-on-sm'),
+  classNames('pf-m-2-col-on-sm'),
+  classNames('pf-m-4-col-on-sm'),
+  classNames('pf-m-2-col-on-sm'),
+];
+
 const BindingHeader = props => <ListHeader>
   <ColHead {...props} className="col-xs-4" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-xs-2" sortField="subject.kind">Subject Kind</ColHead>
   <ColHead {...props} className="col-xs-4" sortField="subject.name">Subject Name</ColHead>
   <ColHead {...props} className="col-xs-2" sortField="metadata.namespace">Namespace</ColHead>
 </ListHeader>;
+
+const BindingsTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: bindingsColumnClasses[0]},
+    },
+    {
+      title: 'Subject Kind', sortField: 'subject.kind', transforms: [sortable],
+      props: { className: bindingsColumnClasses[1]},
+    },
+    {
+      title: 'Subject Name', sortField: 'subject.name', transforms: [sortable],
+      props: { className: bindingsColumnClasses[2]},
+    },
+    { title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: bindingsColumnClasses[3]},
+    },
+  ];
+};
+BindingsTableHeader.displayName = 'BindingsTableHeader';
 
 const BindingRow = ({obj: binding}) => <ResourceRow obj={binding}>
   <div className="col-xs-4">
@@ -128,7 +195,30 @@ const BindingRow = ({obj: binding}) => <ResourceRow obj={binding}>
   </div>
 </ResourceRow>;
 
-const BindingsListComponent = props => <BindingsList {...props} Header={BindingHeader} Row={BindingRow} />;
+const BindingsTableRow = ({obj: binding, index, key, style}) => {
+  return (
+    <Vr id={binding.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={bindingsColumnClasses[0]}>
+        <BindingName binding={binding} />
+      </Vd>
+      <Vd className={bindingsColumnClasses[1]}>
+        {binding.subject.kind}
+      </Vd>
+      <Vd className={bindingsColumnClasses[2]}>
+        {binding.subject.name}
+      </Vd>
+      <Vd className={bindingsColumnClasses[3]}>
+        {binding.namespace || 'all'}
+      </Vd>
+    </Vr>
+  );
+};
+BindingsTableRow.displayName = 'BindingsTableRow';
+
+const BindingsListComponent = props => <React.Fragment>
+  <Table {...props} aria-label="Bindings" Header={BindingsTableHeader} Row={BindingsTableRow} virtualize />
+  {false && <BindingsList {...props} Header={BindingHeader} Row={BindingRow} /> }
+</React.Fragment>;
 
 export const BindingsForRolePage = (props) => {
   const {match: {params: {name, ns}}, obj:{kind}} = props;
@@ -158,7 +248,10 @@ export const ClusterRolesDetailsPage = RolesDetailsPage;
 
 const EmptyMsg = () => <MsgBox title="No Roles Found" detail="Roles grant access to types of objects in the cluster. Roles are applied to a team or user via a Role Binding." />;
 
-const RolesList = props => <List {...props} EmptyMsg={EmptyMsg} Header={Header} Row={Row} />;
+const RolesList = props => <React.Fragment>
+  <Table {...props} aria-label="Roles" Header={RolesTableHeader} Row={RolesTableRow} virtualize />
+  {false && <List {...props} EmptyMsg={EmptyMsg} Header={Header} Row={Row} /> }
+</React.Fragment>;
 
 export const roleType = role => {
   if (!role) {

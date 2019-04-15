@@ -7,7 +7,14 @@ import {
   ListPage,
   WorkloadListHeader,
   WorkloadListRow,
+  Table,
 } from './factory';
+
+import {
+  WorkloadTableRow,
+  WorkloadTableHeader,
+} from './workload-table';
+
 import {
   AsyncComponent,
   Kebab,
@@ -23,6 +30,19 @@ export const menuActions = [AddStorage, EditEnvironment, ...common];
 
 const kind = 'StatefulSet';
 const Row = props => <WorkloadListRow {...props} kind={kind} actions={menuActions} />;
+
+const StatefulSetTableRow = ({obj, index, key, style}) => {
+  return (
+    <WorkloadTableRow obj={obj} index={index} key={key} style={style} menuActions={menuActions} kind={kind} />
+  );
+};
+StatefulSetTableRow.displayName = 'StatefulSetTableRow';
+
+
+const StatefulSetTableHeader = () => {
+  return WorkloadTableHeader();
+};
+StatefulSetTableHeader.displayName = 'StatefulSetTableHeader';
 
 const Details = ({obj: ss}) => <React.Fragment>
   <div className="co-m-pane__body">
@@ -48,7 +68,10 @@ const environmentComponent = (props) => <EnvironmentPage
   readOnly={false}
 />;
 
-export const StatefulSetsList = props => <List {...props} Header={WorkloadListHeader} Row={Row} />;
+export const StatefulSetsList = props => <React.Fragment>
+  <Table {...props} aria-label="Stateful Sets" Header={StatefulSetTableHeader} Row={StatefulSetTableRow} virtualize />
+  {false && <List {...props} Header={WorkloadListHeader} Row={Row} /> }
+</React.Fragment>;
 export const StatefulSetsPage = props => <ListPage {...props} ListComponent={StatefulSetsList} kind={kind} canCreate={true} />;
 
 const pages = [

@@ -2,15 +2,25 @@ import * as React from 'react';
 import * as _ from 'lodash-es';
 import { match, Link } from 'react-router-dom';
 import { Map as ImmutableMap } from 'immutable';
-
-import { MultiListPage, List, ListHeader, ColHead, ResourceRow, DetailsPage } from '../factory';
+import { sortable } from '@patternfly/react-table';
+import * as classNames from 'classnames';
+import { MultiListPage, List, ListHeader, ColHead, ResourceRow, DetailsPage, Table, Vr, Vd } from '../factory';
 import { SectionHeading, MsgBox, ResourceLink, ResourceKebab, Kebab, ResourceIcon, navFactory, ResourceSummary, history } from '../utils';
 import { InstallPlanKind, InstallPlanApproval, olmNamespace, Step, referenceForStepResource } from './index';
-import { referenceForModel, referenceForOwnerRef, k8sUpdate, apiVersionForReference } from '../../module/k8s';
+import { K8sResourceKind, referenceForModel, referenceForOwnerRef, k8sUpdate, apiVersionForReference } from '../../module/k8s';
 import { SubscriptionModel, ClusterServiceVersionModel, InstallPlanModel, CatalogSourceModel, OperatorGroupModel } from '../../models';
 import { breadcrumbsForOwnerRefs } from '../utils/breadcrumbs';
 import { requireOperatorGroup } from './operator-group';
 import { installPlanPreviewModal } from '../modals';
+
+const tableColumnClasses = [
+  classNames('pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
+  Kebab.columnClass,
+];
 
 export const InstallPlanHeader: React.SFC<InstallPlanHeaderProps> = (props) => <ListHeader>
   <ColHead {...props} className="col-xs-6 col-sm-4 col-md-3" sortField="metadata.name">Name</ColHead>
@@ -19,6 +29,33 @@ export const InstallPlanHeader: React.SFC<InstallPlanHeaderProps> = (props) => <
   <ColHead {...props} className="hidden-xs hidden-sm col-md-3 col-lg-2">Subscriptions</ColHead>
   <ColHead {...props} className="hidden-xs hidden-sm hidden-md col-lg-2" sortField="status.phase">Status</ColHead>
 </ListHeader>;
+
+export const InstallPlanTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Components', props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Subscriptions', props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Status', sortField: 'status.phase', transforms: [sortable],
+      props: { className: tableColumnClasses[4]},
+    },
+    {
+      title: '', props: { className: tableColumnClasses[5]},
+    },
+  ];
+};
+InstallPlanTableHeader.displayName = 'InstallPlanTableHeader';
 
 export const InstallPlanRow: React.SFC<InstallPlanRowProps> = (props) => {
   const phaseFor = (phase: InstallPlanKind['status']['phase']) => phase === 'RequiresApproval'
@@ -56,9 +93,58 @@ export const InstallPlanRow: React.SFC<InstallPlanRowProps> = (props) => {
     </div>
   </ResourceRow>;
 };
+
+export const InstallPlanTableRow: React.FC<InstallPlanTableRowProps> = ({obj, index, key, style}) => {
+  const phaseFor = (phase: InstallPlanKind['status']['phase']) => phase === 'RequiresApproval'
+    ? <React.Fragment><i className="fa fa-exclamation-triangle text-warning" aria-hidden="true" /> {phase}</React.Fragment>
+    : phase;
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={referenceForModel(InstallPlanModel)} namespace={obj.metadata.namespace} name={obj.metadata.name} title={obj.metadata.uid} />
+      </Vd>
+      <Vd className={tableColumnClasses[1]}>
+        <ResourceLink kind="Namespace" name={obj.metadata.namespace} title={obj.metadata.namespace} displayName={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        <ul className="list-unstyled">
+          { obj.spec.clusterServiceVersionNames.map((csvName, i) => <li key={i}>
+            { _.get(obj, 'status.phase') === 'Complete'
+              ? <ResourceLink kind={referenceForModel(ClusterServiceVersionModel)} name={csvName} namespace={obj.metadata.namespace} title={csvName} />
+              : <React.Fragment><ResourceIcon kind={referenceForModel(ClusterServiceVersionModel)} />{csvName}</React.Fragment> }
+          </li>) }
+        </ul>
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        { (obj.metadata.ownerReferences || [])
+          .filter(ref => referenceForOwnerRef(ref) === referenceForModel(SubscriptionModel))
+          .map(ref => <ul key={ref.uid} className="list-unstyled">
+            <li><ResourceLink kind={referenceForModel(SubscriptionModel)} name={ref.name} namespace={obj.metadata.namespace} title={ref.uid} /></li>
+          </ul>) || <span className="text-muted">None</span> }
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>
+        {phaseFor(_.get(obj.status, 'phase')) || 'Unknown'}
+      </Vd>
+      <Vd className={tableColumnClasses[5]}>
+        <ResourceKebab actions={Kebab.factory.common} kind={referenceForModel(InstallPlanModel)} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+InstallPlanTableRow.displayName = 'InstallPlanTableRow';
+export type InstallPlanTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
+};
+
 export const InstallPlansList = requireOperatorGroup((props: InstallPlansListProps) => {
   const EmptyMsg = () => <MsgBox title="No Install Plans Found" detail="Install Plans are created automatically by subscriptions or manually using the CLI." />;
-  return <List {...props} Header={InstallPlanHeader} Row={InstallPlanRow} EmptyMsg={EmptyMsg} />;
+  return <React.Fragment>
+    <Table {...props} aria-label="Install Plans" Header={InstallPlanTableHeader} Row={InstallPlanTableRow} EmptyMsg={EmptyMsg} />
+    {false && <List {...props} Header={InstallPlanHeader} Row={InstallPlanRow} EmptyMsg={EmptyMsg} /> }
+  </React.Fragment>;
 });
 
 export const InstallPlansPage: React.SFC<InstallPlansPageProps> = (props) => {

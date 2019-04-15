@@ -3,7 +3,7 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 
-import { DetailsPage, List, ListPage, WorkloadListHeader, WorkloadListRow } from './factory';
+import { DetailsPage, List, ListPage, WorkloadListHeader, WorkloadListRow, Table } from './factory';
 import {
   Kebab,
   ContainerTable,
@@ -13,6 +13,12 @@ import {
   ResourcePodCount,
   AsyncComponent,
 } from './utils';
+
+import {
+  WorkloadTableRow,
+  WorkloadTableHeader,
+} from './workload-table';
+
 import { breadcrumbsForOwnerRefs } from './utils/breadcrumbs';
 import { ResourceEventStream } from './events';
 import { VolumesTable } from './volumes-table';
@@ -72,7 +78,26 @@ const ReplicaSetsDetailsPage = props => <DetailsPage
 />;
 
 const Row = props => <WorkloadListRow {...props} kind="ReplicaSet" actions={replicaSetMenuActions} />;
-const ReplicaSetsList = props => <List {...props} Header={WorkloadListHeader} Row={Row} />;
+
+const kind = 'ReplicaSet';
+
+const ReplicaSetTableRow = ({obj, index, key, style}) => {
+  return (
+    <WorkloadTableRow obj={obj} index={index} key={key} style={style} menuActions={replicaSetMenuActions} kind={kind} />
+  );
+};
+ReplicaSetTableRow.displayName = 'ReplicaSetTableRow';
+
+
+const ReplicaSetTableHeader = () => {
+  return WorkloadTableHeader();
+};
+ReplicaSetTableHeader.displayName = 'ReplicaSetTableHeader';
+
+const ReplicaSetsList = props => <React.Fragment>
+  <Table {...props} aria-label="Replicate Sets" Header={ReplicaSetTableHeader} Row={ReplicaSetTableRow} virtualize />
+  {false && <List {...props} Header={WorkloadListHeader} Row={Row} /> }
+</React.Fragment>;
 const ReplicaSetsPage = props => <ListPage canCreate={true} ListComponent={ReplicaSetsList} {...props} />;
 
 export {ReplicaSetsList, ReplicaSetsPage, ReplicaSetsDetailsPage};

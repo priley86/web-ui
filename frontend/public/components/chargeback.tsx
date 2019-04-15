@@ -1,10 +1,10 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import * as classNames from 'classnames';
-
+import { sortable } from '@patternfly/react-table';
 import { connectToFlags, flagPending } from '../reducers/features';
 import { FLAGS } from '../const';
-import { ColHead, DetailsPage, List, ListHeader, ListPage } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
 import { getQueryArgument, setQueryArgument } from './utils/router';
 import { coFetchJSON } from '../co-fetch';
 import { ChargebackReportModel } from '../models';
@@ -15,6 +15,7 @@ import {
   MsgBox,
 } from './utils/status-box';
 import {
+  K8sResourceKind,
   GroupVersionKind,
   modelFor,
   referenceForModel,
@@ -65,6 +66,15 @@ const ChargebackNavBar: React.SFC<{match: {url: string}}> = props => <div>
   <NavBar pages={reportPages} basePath={props.match.url.split('/').slice(0, -1).join('/')} />
 </div>;
 
+const tableColumnClasses = [
+  classNames('pf-m-3-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-4-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
+  classNames('pf-m-1-col-on-xl', 'pf-m-2-col-on-lg', 'pf-m-4-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-2-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-2-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  Kebab.columnClass,
+];
 
 const ReportsHeader = props => <ListHeader>
   <ColHead {...props} className="col-lg-3 col-md-3 col-xs-4" sortField="metadata.name">Name</ColHead>
@@ -74,6 +84,38 @@ const ReportsHeader = props => <ListHeader>
   <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortField="spec.reportingStart">Reporting Start</ColHead>
   <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortField="spec.reportingEnd">Reporting End</ColHead>
 </ListHeader>;
+
+export const ReportsTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Report Generation Query', props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Status', sortField: 'spec.status.phase', transforms: [sortable],
+      props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Reporting Start', sortField: 'spec.reportingStart', transforms: [sortable],
+      props: { className: tableColumnClasses[4]},
+    },
+    {
+      title: 'Reporting End', sortField: 'spec.reportingEnd', transforms: [sortable],
+      props: { className: tableColumnClasses[5]},
+    },
+    { title: '',
+      props: { className: tableColumnClasses[6]},
+    },
+  ];
+};
+ReportsTableHeader.displayName = 'ReportsTableHeader';
 
 const ReportsRow: React.SFC<ReportsRowProps> = ({obj}) => {
   return <div className="row co-resource-list__item">
@@ -89,6 +131,41 @@ const ReportsRow: React.SFC<ReportsRowProps> = ({obj}) => {
       <ResourceKebab actions={menuActions} kind={ReportReference} resource={obj} />
     </div>
   </div>;
+};
+
+const ReportsTableRow: React.FC<ReportsTableRowProps> = ({obj, index, key, style}) => {
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={ReportReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
+      </Vd>
+      <Vd className={tableColumnClasses[1]}>
+        <ResourceLink kind="Namespace" name={obj.metadata.namespace} namespace={undefined} title={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        <ResourceLink kind={ReportGenerationQueryReference} name={_.get(obj, ['spec', 'generationQuery'])} namespace={obj.metadata.namespace} title={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[3], 'co-break-word')}>
+        {_.get(obj, ['status', 'phase'])}
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>
+        <Timestamp timestamp={_.get(obj, ['spec', 'reportingStart'])} />
+      </Vd>
+      <Vd className={tableColumnClasses[5]}>
+        <Timestamp timestamp={_.get(obj, ['spec', 'reportingEnd'])} />
+      </Vd>
+      <Vd className={tableColumnClasses[6]}>
+        <ResourceKebab actions={menuActions} kind={ReportReference} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+ReportsTableRow.displayName = 'ReportsTableRow';
+export type ReportsTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
 };
 
 class ReportsDetails extends React.Component<ReportsDetailsProps> {
@@ -367,7 +444,10 @@ const reportsPages = [
 ];
 
 const EmptyMsg = () => <MsgBox title="No reports have been generated" detail="Reports allow resource usage and cost to be tracked per namespace, pod, and more." />;
-export const ReportsList: React.SFC = props => <List {...props} Header={ReportsHeader} Row={ReportsRow} EmptyMsg={EmptyMsg} />;
+export const ReportsList: React.SFC = props => <React.Fragment>
+  <Table {...props} aria-label="Reports" Header={ReportsTableHeader} Row={ReportsTableRow} EmptyMsg={EmptyMsg} />
+  {false && <List {...props} Header={ReportsHeader} Row={ReportsRow} EmptyMsg={EmptyMsg} /> }
+</React.Fragment>;
 
 const ReportsPage_: React.SFC<ReportsPageProps> = props => {
   if (flagPending(props.flags[FLAGS.CHARGEBACK])) {

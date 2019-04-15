@@ -36,7 +36,7 @@ export const config: Config = {
     chromeOptions: {
       args: [
         '--disable-gpu',
-        '--headless',
+        // '--headless',
         '--no-sandbox',
         '--window-size=1920,1200',
         '--disable-background-timer-throttling',
