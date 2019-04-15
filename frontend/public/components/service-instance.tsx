@@ -1,9 +1,10 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import { Link, withRouter, RouteComponentProps, match } from 'react-router-dom';
-
+import { sortable } from '@patternfly/react-table';
+import * as classNames from 'classnames';
 import { k8sList, K8sResourceKind, planExternalName, serviceCatalogStatus, referenceForModel } from '../module/k8s';
-import { ColHead, DetailsPage, List, ListHeader, ListPage } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
 import {
   ExternalLink,
   Kebab,
@@ -174,6 +175,16 @@ export const ServiceInstanceDetailsPage: React.SFC<ServiceInstanceDetailsPagePro
     pages={pages} />;
 ServiceInstanceDetailsPage.displayName = 'ServiceInstanceDetailsPage';
 
+const tableColumnClasses = [
+  classNames('pf-m-2-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-3-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-3-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-2-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  Kebab.columnClass,
+];
+
 const ServiceInstancesHeader = props => <ListHeader>
   <ColHead {...props} className="col-md-2 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-md-2 col-sm-3 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
@@ -182,6 +193,40 @@ const ServiceInstancesHeader = props => <ListHeader>
   <ColHead {...props} className="col-md-2 hidden-sm hidden-xs" sortFunc="planExternalName">Plan</ColHead>
   <ColHead {...props} className="col-md-2 hidden-sm hidden-xs" sortField="metadata.creationTimestamp">Created</ColHead>
 </ListHeader>;
+
+export const ServiceInstancesTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Service Class', sortField: 'spec.clusterServiceClassExternalName', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Status', sortFunc: 'serviceCatalogStatus', transforms: [sortable],
+      props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Plan', sortFunc: 'planExternalName', transforms: [sortable],
+      props: { className: tableColumnClasses[4]},
+    },
+    {
+      title: 'Created', sortField: 'metadata.creationTimestamp', transforms: [sortable],
+      props: { className: tableColumnClasses[5]},
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[6]},
+    },
+  ];
+};
+ServiceInstancesTableHeader.displayName = 'ServiceInstancesTableHeader';
 
 const ServiceInstancesRow: React.SFC<ServiceInstancesRowProps> = ({obj}) => {
   const clusterServiceClassRefName = _.get(obj, 'spec.clusterServiceClassRef.name');
@@ -213,7 +258,48 @@ const ServiceInstancesRow: React.SFC<ServiceInstancesRowProps> = ({obj}) => {
   </div>;
 };
 
-const ServiceInstancesList: React.SFC = props => <List {...props} Header={ServiceInstancesHeader} Row={ServiceInstancesRow} />;
+export const ServiceInstancesTableRow: React.FC<ServiceInstancesTableRowProps> = ({obj, index, key, style}) => {
+  const clusterServiceClassRefName = _.get(obj, 'spec.clusterServiceClassRef.name');
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={referenceForModel(ServiceInstanceModel)} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        <ResourceLink kind="Namespace" name={obj.metadata.namespace} title={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[2], 'co-break-word')}>
+        {clusterServiceClassRefName
+          ? <ResourceLink kind={referenceForModel(ClusterServiceClassModel)} displayName={obj.spec.clusterServiceClassExternalName} title={obj.spec.clusterServiceClassExternalName} name={obj.spec.clusterServiceClassRef.name} />
+          : obj.spec.clusterServiceClassExternalName }
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        <StatusWithIcon obj={obj} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[4], 'co-break-word')}>
+        {planExternalName(obj) || '-'}
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[5], 'co-truncate')}>
+        <Timestamp timestamp={obj.metadata.creationTimestamp} />
+      </Vd>
+      <Vd className={tableColumnClasses[6]}>
+        <ResourceKebab actions={menuActions} kind={referenceForModel(ServiceInstanceModel)} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+ServiceInstancesTableRow.displayName = 'ServiceInstancesTableRow';
+export type ServiceInstancesTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
+};
+
+const ServiceInstancesList: React.SFC = props => <React.Fragment>
+  <Table {...props} aria-label="Service Instances" Header={ServiceInstancesTableHeader} Row={ServiceInstancesTableRow} virtualize />
+  {false && <List {...props} Header={ServiceInstancesHeader} Row={ServiceInstancesRow} /> }
+</React.Fragment>;
 ServiceInstancesList.displayName = 'ServiceInstancesList';
 
 const filters = [{

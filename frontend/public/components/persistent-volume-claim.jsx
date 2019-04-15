@@ -1,10 +1,11 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
-
+import { sortable } from '@patternfly/react-table';
+import * as classNames from 'classnames';
 import { connectToFlags } from '../reducers/features';
 import { Conditions } from './conditions';
 import { FLAGS } from '../const';
-import { ColHead, DetailsPage, List, ListHeader, ListPage } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, navFactory, ResourceKebab, SectionHeading, ResourceLink, ResourceSummary, Selector, StatusIconAndText } from './utils';
 import { ResourceEventStream } from './events';
 
@@ -18,6 +19,13 @@ const PVCStatus = ({pvc}) => {
   return <StatusIconAndText status={phase} />;
 };
 
+const tableColumnClasses = [
+  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  Kebab.columnClass,
+];
+
 const Header = props => <ListHeader>
   <ColHead {...props} className="col-lg-2 col-md-2 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-lg-2 col-md-2 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
@@ -25,6 +33,28 @@ const Header = props => <ListHeader>
   <ColHead {...props} className="col-lg-3 col-md-3 hidden-sm hidden-xs" sortField="spec.volumeName">Persistent Volume</ColHead>
   <ColHead {...props} className="col-lg-3 col-md-3 hidden-sm hidden-xs" sortField="spec.resources.requests.storage">Requested</ColHead>
 </ListHeader>;
+
+export const TableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Status', sortField: 'status.phase', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[3]},
+    },
+  ];
+};
+TableHeader.displayName = 'TableHeader';
 
 const kind = 'PersistentVolumeClaim';
 const Row = ({obj}) => <div className="row co-resource-list__item">
@@ -50,6 +80,26 @@ const Row = ({obj}) => <div className="row co-resource-list__item">
     <ResourceKebab actions={menuActions} kind={kind} resource={obj} />
   </div>
 </div>;
+
+export const TableRow = ({obj, index, key, style}) => {
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={kind} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        <ResourceLink kind="Namespace" name={obj.metadata.namespace} title={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        <PVCStatus pvc={obj} />
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        <ResourceKebab actions={menuActions} kind={kind} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+TableRow.displayName = 'TableRow';
 
 const Details_ = ({flags, obj: pvc}) => {
   const canListPV = flags[FLAGS.CAN_LIST_PV];
@@ -114,7 +164,10 @@ const filters = [{
 }];
 
 
-export const PersistentVolumeClaimsList = props => <List {...props} Header={Header} Row={Row} />;
+export const PersistentVolumeClaimsList = props => <React.Fragment>
+  <Table {...props} aria-label="Persistent Volume Claims" Header={TableHeader} Row={TableRow} virtualize />
+  {false && <List {...props} Header={Header} Row={Row} /> }
+</React.Fragment>;
 export const PersistentVolumeClaimsPage = props => {
   const createProps = {
     to: `/k8s/ns/${props.namespace || 'default'}/persistentvolumeclaims/~new/form`,

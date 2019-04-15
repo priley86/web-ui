@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
-
 import { k8sCreate, K8sKind, K8sResourceKind, K8sResourceKindReference } from '../module/k8s';
 import { errorModal } from './modals';
 import { DeploymentConfigModel } from '../models';
@@ -13,6 +12,7 @@ import {
   ListPage,
   WorkloadListHeader,
   WorkloadListRow,
+  Table,
 } from './factory';
 import {
   AsyncComponent,
@@ -30,6 +30,11 @@ import {
   WorkloadPausedAlert,
   StatusIconAndText,
 } from './utils';
+
+import {
+  WorkloadTableRow,
+  WorkloadTableHeader,
+} from './workload-table';
 
 const DeploymentConfigsReference: K8sResourceKindReference = 'DeploymentConfig';
 
@@ -186,10 +191,33 @@ export const DeploymentConfigsDetailsPage: React.FC<DeploymentConfigsDetailsPage
 };
 DeploymentConfigsDetailsPage.displayName = 'DeploymentConfigsDetailsPage';
 
+const kind = 'DeploymentConfig';
+
+const DeploymentConfigTableRow: React.FC<DeploymentConfigTableRowProps> = ({obj, index, key, style}) => {
+  return (
+    <WorkloadTableRow obj={obj} index={index} key={key} style={style} menuActions={menuActions} kind={kind} />
+  );
+};
+DeploymentConfigTableRow.displayName = 'DeploymentTableRow';
+export type DeploymentConfigTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
+};
+
+const DeploymentConfigTableHeader = () => {
+  return WorkloadTableHeader();
+};
+DeploymentConfigTableHeader.displayName = 'DeploymentConfigTableHeader';
+
 const DeploymentConfigsRow: React.FC<DeploymentConfigsRowProps> = props => {
   return <WorkloadListRow {...props} kind="DeploymentConfig" actions={menuActions} />;
 };
-export const DeploymentConfigsList: React.FC = props => <List {...props} Header={WorkloadListHeader} Row={DeploymentConfigsRow} />;
+export const DeploymentConfigsList: React.FC = props => <React.Fragment>
+  <Table {...props} aria-label="Deployment Configs" Header={DeploymentConfigTableHeader} Row={DeploymentConfigTableRow} virtualize />
+  {false && <List {...props} Header={WorkloadListHeader} Row={DeploymentConfigsRow} />}
+</React.Fragment>;
 DeploymentConfigsList.displayName = 'DeploymentConfigsList';
 
 export const DeploymentConfigsPage: React.FC<DeploymentConfigsPageProps> = props => {

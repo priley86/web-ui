@@ -1,9 +1,10 @@
 import * as _ from 'lodash-es';
 import * as React from 'react';
-
+import * as classNames from 'classnames';
+import { sortable } from '@patternfly/react-table';
 import { getNodeRoles, nodeStatus, makeNodeSchedulable, K8sResourceKind, referenceForModel } from '../module/k8s';
 import { ResourceEventStream } from './events';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow } from './factory';
+import { Table, Vr, Vd, ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow } from './factory';
 import { configureUnschedulableModal } from './modals';
 import { PodsPage } from './pod';
 import { Kebab, navFactory, LabelList, ResourceKebab, SectionHeading, ResourceLink, Timestamp, units, cloudProviderNames, cloudProviderID, pluralize, StatusIconAndText, humanizeDecimalBytes, humanizeCpuCores } from './utils';
@@ -61,6 +62,14 @@ export const NodeIPList = ({ips, expand = false}) => <div>
   </div>)}
 </div>;
 
+const tableColumnClasses = [
+  classNames('pf-m-5-col-on-lg', 'pf-m-5-col-on-md', 'pf-m-8-col-on-sm'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-3-col-on-md', 'pf-m-4-col-on-sm'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-3-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  Kebab.columnClass,
+];
+
 const Header = props => {
   if (!props.data) {
     return null;
@@ -72,6 +81,32 @@ const Header = props => {
     <ColHead {...props} className="col-md-3 hidden-sm hidden-xs" sortField="metadata.annotations['machine.openshift.io/machine']">Machine</ColHead>
   </ListHeader>;
 };
+
+export const NodeTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Status', sortFunc: 'nodeReadiness', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Role', sortFunc: 'nodeRoles', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Machine', sortField: 'metadata.annotations[\'machine.openshift.io/machine\']', transforms: [sortable],
+      props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[4]},
+    },
+  ];
+};
+NodeTableHeader.displayName = 'NodeTableHeader';
 
 const NodeStatus = ({node}) => <StatusIconAndText status={nodeStatus(node)} />;
 
@@ -106,7 +141,41 @@ const NodeRow = ({obj: node, expand}) => {
   </ResourceRow>;
 };
 
-const NodesList = props => <List {...props} Header={Header} Row={NodeRow} />;
+export const NodeTableRow: React.FC<NodeTableRowProps> = ({obj: node, index, key, style}) => {
+  const machine = getMachine(node);
+  const roles = getNodeRoles(node).sort();
+  return (
+    <Vr id={node.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind="Node" name={node.metadata.name} title={node.metadata.uid} />
+      </Vd>
+      <Vd className={tableColumnClasses[1]}>
+        <NodeStatus node={node} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        {roles.length ? roles.join(', ') : '-'}
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        {machine && <ResourceLink kind={referenceForModel(MachineModel)} name={machine.name} namespace={machine.namespace} />}
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>
+        <NodeKebab node={node} />
+      </Vd>
+    </Vr>
+  );
+};
+NodeTableRow.displayName = 'NodeTableRow';
+export type NodeTableRowProps = {
+  obj: K8sResourceKind;
+  index: number;
+  key?: string;
+  style: object;
+};
+
+const NodesList = props => <React.Fragment>
+  <Table {...props} aria-label="Nodes" Header={NodeTableHeader} Row={NodeTableRow} virtualize />
+  {false && <List {...props} Header={Header} Row={NodeRow} /> }
+</React.Fragment>;
 
 const filters = [{
   type: 'node-status',
@@ -117,7 +186,7 @@ const filters = [{
     {id: 'Not Ready', title: 'Not Ready'},
   ],
 }];
-export const NodesPage = props => <ListPage {...props} ListComponent={NodesList} rowFilters={filters} canExpand={true} />;
+export const NodesPage = props => <ListPage {...props} ListComponent={NodesList} rowFilters={filters} />;
 
 const NodeGraphs = requirePrometheus(({node}) => {
   const nodeIp = _.find<{type: string, address: string}>(node.status.addresses, {type: 'InternalIP'});

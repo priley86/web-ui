@@ -1,6 +1,7 @@
 import * as _ from 'lodash-es';
 import * as React from 'react';
-
+import { sortable } from '@patternfly/react-table';
+import * as classNames from 'classnames';
 import { Conditions } from './conditions';
 import { errorModal } from './modals';
 import { Tooltip } from './utils/tooltip';
@@ -18,6 +19,9 @@ import {
   List,
   ListHeader,
   ListPage,
+  Table,
+  Vr,
+  Vd,
 } from './factory';
 import {
   Kebab,
@@ -197,6 +201,15 @@ export const MachineConfigPoolDetailsPage: React.SFC<any> = props => (
   />
 );
 
+const tableColumnClasses = [
+  classNames('pf-m-4-col-on-xl', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-5-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
+  classNames('pf-m-1-col-on-xl', 'pf-m-2-col-on-md', 'pf-m-3-col-on-sm'),
+  classNames('pf-m-1-col-on-xl', 'pf-m-2-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-1-col-on-xl', 'pf-m-2-col-on-md', 'pf-m-3-col-on-sm'),
+  Kebab.columnClass,
+];
+
 const MachineConfigPoolHeader: React.SFC<any> = props => <ListHeader>
   <ColHead {...props} className="col-xs-6 col-lg-4" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="hidden-xs hidden-sm hidden-md col-lg-5" sortField="status.configuration.name">Configuration</ColHead>
@@ -204,6 +217,32 @@ const MachineConfigPoolHeader: React.SFC<any> = props => <ListHeader>
   <ColHead {...props} className="hidden-xs col-sm-2 col-lg-1">Updating</ColHead>
   <ColHead {...props} className="col-xs-3  col-sm-2 col-lg-1">Degraded</ColHead>
 </ListHeader>;
+
+export const MachineConfigPoolTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Configuration', sortField: 'status.configuration.name', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Updated', props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Updating', props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Degraded', props: { className: tableColumnClasses[4]},
+    },
+    {
+      title: '', props: { className: tableColumnClasses[5]},
+    },
+  ];
+};
+MachineConfigPoolTableHeader.displayName = 'MachineConfigPoolTableHeader';
 
 const MachineConfigPoolRow: React.SFC<MachineConfigPoolRowProps> = ({obj}) => <div className="row co-resource-list__item">
   <div className="col-xs-6 col-lg-4 co-break-word">
@@ -227,13 +266,51 @@ const MachineConfigPoolRow: React.SFC<MachineConfigPoolRowProps> = ({obj}) => <d
   </div>
 </div>;
 
-const MachineConfigPoolList: React.SFC<any> = props => (
-  <List
+export const MachineConfigPoolTableRow: React.FC<MachineConfigPoolTableRowProps> = ({obj, index, key, style}) => {
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={classNames(tableColumnClasses[0], 'co-break-word')}>
+        <ResourceLink kind={machineConfigPoolReference} name={obj.metadata.name} title={obj.metadata.name} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        {_.get(obj, 'status.configuration.name') ? <ResourceLink kind={machineConfigReference} name={obj.status.configuration.name} title={obj.status.configuration.name} /> : '-'}
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        {getConditionStatus(obj, MachineConfigPoolConditionType.Updated)}
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        {getConditionStatus(obj, MachineConfigPoolConditionType.Updating)}
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[4], 'co-truncate')}>
+        {getConditionStatus(obj, MachineConfigPoolConditionType.Degraded)}
+      </Vd>
+      <Vd className={tableColumnClasses[5]}>
+        <ResourceKebab actions={machineConfigPoolMenuActions} kind={machineConfigPoolReference} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+MachineConfigPoolTableRow.displayName = 'MachineConfigPoolTableRow';
+export type MachineConfigPoolTableRowProps = {
+  obj: MachineConfigPoolKind;
+  index: number;
+  key?: string;
+  style: object;
+};
+
+const MachineConfigPoolList: React.SFC<any> = props => <React.Fragment>
+  <Table
+    {...props}
+    aria-label="Machine Config Pools"
+    Header={MachineConfigPoolTableHeader}
+    Row={MachineConfigPoolTableRow}
+    virtualize />
+  {false && <List
     {...props}
     Header={MachineConfigPoolHeader}
     Row={MachineConfigPoolRow}
-  />
-);
+  />}
+</React.Fragment>;
 
 export const MachineConfigPoolPage: React.SFC<any> = props => (
   <ListPage

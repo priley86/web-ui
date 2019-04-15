@@ -1,12 +1,13 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import { Link } from 'react-router-dom';
-
+import { sortable } from '@patternfly/react-table';
+import * as classNames from 'classnames';
 import { MachineAutoscalerModel, MachineModel, MachineSetModel } from '../models';
 import { K8sKind, MachineDeploymentKind, MachineSetKind, referenceForModel } from '../module/k8s';
 import { getMachineRole, MachinePage } from './machine';
 import { configureMachineAutoscalerModal, configureReplicaCountModal } from './modals';
-import { ColHead, DetailsPage, List, ListHeader, ListPage } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
 import {
   Kebab,
   KebabAction,
@@ -67,11 +68,40 @@ const getReplicas = (machineSet: MachineSetKind | MachineDeploymentKind) => _.ge
 export const getReadyReplicas = (machineSet: MachineSetKind | MachineDeploymentKind) => _.get(machineSet, 'status.readyReplicas', 0);
 export const getAvailableReplicas = (machineSet: MachineSetKind | MachineDeploymentKind) => _.get(machineSet, 'status.availableReplicas', 0);
 
+const tableColumnClasses = [
+  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  Kebab.columnClass,
+];
+
 const MachineSetHeader: React.SFC = props => <ListHeader>
   <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
   <ColHead {...props} className="col-sm-4 hidden-xs" sortField="status.replicas">Machines</ColHead>
 </ListHeader>;
+
+export const MachineSetTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Machines', sortField: 'status.replicas', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[3]},
+    },
+  ];
+};
+MachineSetTableHeader.displayName = 'MachineSetTableHeader';
 
 const MachineSetRow: React.SFC<MachineSetRowProps> = ({obj}: {obj: MachineSetKind}) => <div className="row co-resource-list__item">
   <div className="col-sm-4 col-xs-6">
@@ -89,6 +119,34 @@ const MachineSetRow: React.SFC<MachineSetRowProps> = ({obj}: {obj: MachineSetKin
     <ResourceKebab actions={menuActions} kind={machineSetReference} resource={obj} />
   </div>
 </div>;
+
+export const MachineSetTableRow: React.FC<MachineSetTableRowProps> = ({obj, index, key, style}) => {
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={machineSetReference} name={obj.metadata.name} namespace={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        <ResourceLink kind="Namespace" name={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        <Link to={`${resourcePath(machineSetReference, obj.metadata.name, obj.metadata.namespace)}/machines`}>
+          {getReadyReplicas(obj)} of {getDesiredReplicas(obj)} machines
+        </Link>
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        <ResourceKebab actions={menuActions} kind={machineSetReference} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+MachineSetTableRow.displayName = 'MachineSetTableRow';
+export type MachineSetTableRowProps = {
+  obj: MachineSetKind;
+  index: number;
+  key?: string;
+  style: object;
+};
 
 export const MachineCounts: React.SFC<MachineCountsProps> = ({resourceKind, resource}: {resourceKind: K8sKind, resource: MachineSetKind | MachineDeploymentKind}) => {
   const editReplicas = (event) => {
@@ -185,12 +243,14 @@ const MachineSetDetails: React.SFC<MachineSetDetailsProps> = ({obj}) => {
   </React.Fragment>;
 };
 
-export const MachineSetList: React.SFC = props =>
-  <List
+export const MachineSetList: React.SFC = props => <React.Fragment>
+  <Table {...props} aria-label="Machine Sets" Header={MachineSetTableHeader} Row={MachineSetTableRow} virtualize />
+  {false && <List
     {...props}
     Header={MachineSetHeader}
     Row={MachineSetRow}
-  />;
+  /> }
+</React.Fragment>;
 
 export const MachineSetPage: React.SFC<MachineSetPageProps> = props =>
   <ListPage

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
-
+import * as classNames from 'classnames';
+import { sortable } from '@patternfly/react-table';
 import { ClusterOperatorModel } from '../../models';
 import { StartGuide } from '../start-guide';
 import {
@@ -9,6 +10,9 @@ import {
   List,
   ListHeader,
   ListPage,
+  Table,
+  Vr,
+  Vd,
 } from '../factory';
 import { Conditions } from '../conditions';
 import {
@@ -24,6 +28,7 @@ import {
 import {
   navFactory,
   EmptyBox,
+  Kebab,
   ResourceLink,
   ResourceSummary,
   SectionHeading,
@@ -46,12 +51,41 @@ const OperatorStatusIconAndLabel: React.SFC<OperatorStatusIconAndLabelProps> = (
   return <React.Fragment><i className={iconClass} aria-hidden="true" /> {status}</React.Fragment>;
 };
 
+const tableColumnClasses = [
+  classNames('pf-m-3-col-on-lg', 'pf-m-3-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-lg', 'pf-m-3-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-3-col-on-lg', 'pf-m-3-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-4-col-on-lg', 'pf-m-3-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  Kebab.columnClass,
+];
+
 const ClusterOperatorHeader = props => <ListHeader>
   <ColHead {...props} className="col-md-3 col-sm-3 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-md-2 col-sm-3 col-xs-6" sortFunc="getClusterOperatorStatus">Status</ColHead>
   <ColHead {...props} className="col-md-3 col-sm-3 hidden-xs" sortFunc="getClusterOperatorVersion">Version</ColHead>
   <ColHead {...props} className="col-md-4 col-sm-3 hidden-xs">Message</ColHead>
 </ListHeader>;
+
+export const ClusterOperatorTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Status', sortFunc: 'getClusterOperatorStatus', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Version', sortFunc: 'getClusterOperatorVersion', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: 'Message', props: { className: tableColumnClasses[3]},
+    },
+  ];
+};
+ClusterOperatorTableHeader.displayName = 'ClusterOperatorTableHeader';
 
 const ClusterOperatorRow: React.SFC<ClusterOperatorRowProps> = ({obj}) => {
   const { status, message } = getStatusAndMessage(obj);
@@ -72,7 +106,38 @@ const ClusterOperatorRow: React.SFC<ClusterOperatorRowProps> = ({obj}) => {
   </div>;
 };
 
-export const ClusterOperatorList: React.SFC = props => <List {...props} Header={ClusterOperatorHeader} Row={ClusterOperatorRow} />;
+export const ClusterOperatorTableRow: React.FC<ClusterOperatorTableRowProps> = ({obj, index, key, style}) => {
+  const { status, message } = getStatusAndMessage(obj);
+  const operatorVersion = getClusterOperatorVersion(obj);
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={clusterOperatorReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
+      </Vd>
+      <Vd className={tableColumnClasses[1]}>
+        <OperatorStatusIconAndLabel status={status} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        {operatorVersion || '-'}
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[3], 'co-break-word', 'co-pre-line')}>
+        {message ? _.truncate(message, { length: 256, separator: ' ' }) : '-'}
+      </Vd>
+    </Vr>
+  );
+};
+ClusterOperatorTableRow.displayName = 'ClusterOperatorTableRow';
+export type ClusterOperatorTableRowProps = {
+  obj: ClusterOperator;
+  index: number;
+  key?: string;
+  style: object;
+};
+
+export const ClusterOperatorList: React.SFC = props => <React.Fragment>
+  <Table {...props} aria-label="Cluster Operators" Header={ClusterOperatorTableHeader} Row={ClusterOperatorTableRow} virtualize />
+  {false && <List {...props} Header={ClusterOperatorHeader} Row={ClusterOperatorRow} /> }
+</React.Fragment>;
 
 const allStatuses = [
   OperatorStatus.Available,
