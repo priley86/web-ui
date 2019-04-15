@@ -104,7 +104,8 @@
   align-items: center;
 }
 
-.co-package-row__actions {
+.co-package-row__actions,
+.pf-c-table.pf-c-virtualized .co-package-row__actions {
   align-items: center;
   display: flex;
   justify-content: space-between;

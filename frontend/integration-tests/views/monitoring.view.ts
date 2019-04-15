@@ -4,7 +4,7 @@ export const wait = async(condition) => await browser.wait(condition, 15000);
 
 // List pages
 export const listPageHeading = $('.co-m-pane__heading');
-export const firstListLink = $$('.co-resource-list__item a.co-resource-item__resource-name').first();
+export const firstListLink = $$('.ReactVirtualized__VirtualGrid__innerScrollContainer tr a.co-resource-item__resource-name').first();
 export const createButton = $('.co-m-pane__filter-bar-group button');
 
 // Details pages

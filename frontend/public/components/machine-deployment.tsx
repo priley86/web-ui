@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import { Link } from 'react-router-dom';
-
+import { sortable } from '@patternfly/react-table';
+import * as classNames from 'classnames';
 import { MachineModel, MachineDeploymentModel } from '../models';
 import { MachineDeploymentKind, referenceForModel } from '../module/k8s';
 import { getMachineRole } from './machine';
@@ -13,7 +14,7 @@ import {
   MachineCounts,
   MachineTabPage,
 } from './machine-set';
-import { ColHead, DetailsPage, List, ListHeader, ListPage } from './factory';
+import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
 import {
   Kebab,
   ResourceKebab,
@@ -32,11 +33,40 @@ const menuActions = [editCountAction, ...common];
 const machineReference = referenceForModel(MachineModel);
 const machineDeploymentReference = referenceForModel(MachineDeploymentModel);
 
+const tableColumnClasses = [
+  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  Kebab.columnClass,
+];
+
 const MachineDeploymentHeader: React.SFC = props => <ListHeader>
   <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
   <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
   <ColHead {...props} className="col-sm-4 hidden-xs" sortField="status.replicas">Machines</ColHead>
 </ListHeader>;
+
+export const MachineDeploymentTableHeader = () => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      props: { className: tableColumnClasses[0]},
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      props: { className: tableColumnClasses[1]},
+    },
+    {
+      title: 'Machines', sortField: 'status.replicas', transforms: [sortable],
+      props: { className: tableColumnClasses[2]},
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[3]},
+    },
+  ];
+};
+MachineDeploymentTableHeader.displayName = 'MachineDeploymentTableHeader';
 
 const MachineDeploymentRow: React.SFC<MachineDeploymentRowProps> = ({obj}: {obj: MachineDeploymentKind}) => <div className="row co-resource-list__item">
   <div className="col-sm-4 col-xs-6">
@@ -54,6 +84,34 @@ const MachineDeploymentRow: React.SFC<MachineDeploymentRowProps> = ({obj}: {obj:
     <ResourceKebab actions={menuActions} kind={machineDeploymentReference} resource={obj} />
   </div>
 </div>;
+
+export const MachineDeploymentTableRow: React.FC<MachineDeploymentTableRowProps> = ({obj, index, key, style}) => {
+  return (
+    <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
+      <Vd className={tableColumnClasses[0]}>
+        <ResourceLink kind={machineDeploymentReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
+      </Vd>
+      <Vd className={classNames(tableColumnClasses[1], 'co-break-word')}>
+        <ResourceLink kind="Namespace" name={obj.metadata.namespace} />
+      </Vd>
+      <Vd className={tableColumnClasses[2]}>
+        <Link to={`${resourcePath(machineDeploymentReference, obj.metadata.name, obj.metadata.namespace)}/machines`}>
+          {getReadyReplicas(obj)} of {getDesiredReplicas(obj)} machines
+        </Link>
+      </Vd>
+      <Vd className={tableColumnClasses[3]}>
+        <ResourceKebab actions={menuActions} kind={machineDeploymentReference} resource={obj} />
+      </Vd>
+    </Vr>
+  );
+};
+MachineDeploymentTableRow.displayName = 'MachineDeploymentTableRow';
+export type MachineDeploymentTableRowProps = {
+  obj: MachineDeploymentKind;
+  index: number;
+  key?: string;
+  style: object;
+};
 
 const MachineDeploymentDetails: React.SFC<MachineDeploymentDetailsProps> = ({obj}) => {
   const machineRole = getMachineRole(obj);
@@ -110,12 +168,19 @@ const MachineDeploymentDetails: React.SFC<MachineDeploymentDetailsProps> = ({obj
   </React.Fragment>;
 };
 
-export const MachineDeploymentList: React.SFC = props =>
-  <List
+export const MachineDeploymentList: React.SFC = props => <React.Fragment>
+  <Table
+    {...props}
+    aria-label="Machine Deployments"
+    Header={MachineDeploymentTableHeader}
+    Row={MachineDeploymentTableRow}
+    virtualize />
+  {false && <List
     {...props}
     Header={MachineDeploymentHeader}
     Row={MachineDeploymentRow}
-  />;
+  />}
+</React.Fragment>;
 
 export const MachineDeploymentPage: React.SFC<MachineDeploymentPageProps> = props =>
   <ListPage
