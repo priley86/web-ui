@@ -1,6 +1,12 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
-
+import {
+  headerCol,
+  sortable,
+  Visibility,
+  classNames,
+} from '@patternfly/react-table';
+import { Link } from 'react-router-dom';
 import { DeploymentModel } from '../models';
 import { configureUpdateStrategyModal, errorModal } from './modals';
 import { Conditions } from './conditions';
@@ -9,10 +15,11 @@ import { formatDuration } from './utils/datetime';
 import { VolumesTable } from './volumes-table';
 import {
   DetailsPage,
-  List,
   ListPage,
+  List,
   WorkloadListHeader,
   WorkloadListRow,
+  Table,
 } from './factory';
 import {
   AsyncComponent,
@@ -26,6 +33,11 @@ import {
   StatusIcon,
   togglePaused,
   WorkloadPausedAlert,
+  LabelList,
+  ResourceKebab,
+  ResourceLink,
+  resourcePath,
+  Selector,
 } from './utils';
 
 const {ModifyCount, AddStorage, EditEnvironment, common} = Kebab.factory;
@@ -117,7 +129,77 @@ const DeploymentsDetailsPage = props => <DetailsPage
 />;
 
 const Row = props => <WorkloadListRow {...props} kind="Deployment" actions={menuActions} />;
-const DeploymentsList = props => <List {...props} Header={WorkloadListHeader} Row={Row} />;
+
+const kind = 'Deployment';
+
+const DeploymentTableRow = (o) => {
+  return {
+    id: o.metadata.uid,
+    cells: [
+      {
+        title: <ResourceLink kind={kind} name={o.metadata.name} namespace={o.metadata.namespace} title={o.metadata.uid} />,
+      },
+      {
+        title: <ResourceLink kind="Namespace" name={o.metadata.namespace} title={o.metadata.namespace} />,
+      },
+      {
+        title: <LabelList kind={kind} labels={o.metadata.labels} />,
+      },
+      {
+        title: <Link to={`${resourcePath(kind, o.metadata.name, o.metadata.namespace)}/pods`} title="pods">
+          {o.status.replicas || 0} of {o.spec.replicas} pods
+        </Link>,
+      },
+      {
+        title: <Selector selector={o.spec.selector} namespace={o.metadata.namespace} />,
+      },
+      {
+        title: <ResourceKebab actions={menuActions} kind={kind} resource={o} />,
+        props: { className: 'pf-c-table__action'},
+      },
+    ],
+  };
+};
+
+const DeploymentTableRows = componentProps =>
+  _.map(componentProps.data, obj => obj && obj.metadata && DeploymentTableRow(obj));
+
+const DeploymentTableHeader = props => {
+  return [
+    {
+      title: 'Name', sortField: 'metadata.name', transforms: [sortable],
+      columnTransforms: [classNames('pf-u-w-25-on-lg', 'pf-u-w-25-on-md', 'pf-u-w-33-on-sm', 'pf-u-w-50-on-xs')],
+      cellTransforms: [headerCol()], props,
+    },
+    {
+      title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
+      columnTransforms: [classNames('pf-u-w-25-on-lg', 'pf-u-w-25-on-md', 'pf-u-w-33-on-sm', 'pf-u-w-50-on-xs')],
+      props,
+    },
+    {
+      title: 'Labels', sortField: 'metadata.labels', transforms: [sortable],
+      columnTransforms: [classNames('pf-u-w-33-on-lg', 'pf-u-w-33-on-md', 'pf-u-w-33-on-sm', Visibility.hidden, Visibility.visibleOnMd)],
+      props,
+    },
+    {
+      title: 'Status', sortFunc: 'numReplicas', transforms: [sortable],
+      columnTransforms: [classNames('pf-u-w-25-on-lg', 'pf-u-w-25-on-md', Visibility.hidden, Visibility.visibleOnLg)],
+      props: {...props, className: 'meta-status'},
+    },
+    { title: 'Pod Selector', sortField: 'spec.selector', transforms: [sortable],
+      columnTransforms: [classNames('pf-u-w-25-on-lg', Visibility.hidden, Visibility.visibleOnXl)], props },
+    // todo: add support for table actions api: https://github.com/patternfly/patternfly-react/pull/1441
+    // this is for the empty actions/kebab column header
+    { title: '' },
+  ];
+};
+
+const DeploymentsList = props => <React.Fragment>
+  <Table {...props} aria-label="Deployments" Header={DeploymentTableHeader} Rows={DeploymentTableRows} virtualize />
+  {/* existing list for comparison purposes only */}
+  {false && <List {...props} Header={WorkloadListHeader} Row={Row} />}
+</React.Fragment>;
+
 const DeploymentsPage = props => <ListPage canCreate={true} ListComponent={DeploymentsList} {...props} />;
 
 export {DeploymentsList, DeploymentsPage, DeploymentsDetailsPage};
