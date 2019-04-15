@@ -55,7 +55,8 @@ const config: webpack.Configuration = {
       },
       {
         test: /\.s?css$/,
-        exclude: /node_modules/,
+        // PF loads CSS directly from node_modules\@patternfly now so removing this
+        // exclude: /node_modules/,
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
