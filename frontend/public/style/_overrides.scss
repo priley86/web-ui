@@ -322,8 +322,8 @@ tags-input .autocomplete .suggestion-item em {
 
 .pf-c-page__sidebar {
   --pf-c-page__sidebar--BackgroundColor: #{$color-pf-black-900};
-  --pf-c-page__sidebar--PaddingBottom: 0;
-  --pf-c-page__sidebar--PaddingTop: 0;
+  --pf-c-page__sidebar-body--PaddingTop: 0;
+  --pf-c-page__sidebar-body--PaddingBottom: 0;
   bottom: 0;
   left: 0;
   position: absolute;
