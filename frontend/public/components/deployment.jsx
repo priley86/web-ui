@@ -1,6 +1,10 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
-
+import {
+  headerCol,
+  sortable,
+} from '@patternfly/react-table';
+import { Link } from 'react-router-dom';
 import { DeploymentModel } from '../models';
 import { configureUpdateStrategyModal, errorModal } from './modals';
 import { Conditions } from './conditions';
@@ -13,6 +17,7 @@ import {
   ListPage,
   WorkloadListHeader,
   WorkloadListRow,
+  Table,
 } from './factory';
 import {
   AsyncComponent,
@@ -26,6 +31,11 @@ import {
   StatusIcon,
   togglePaused,
   WorkloadPausedAlert,
+  LabelList,
+  ResourceKebab,
+  ResourceLink,
+  resourcePath,
+  Selector,
 } from './utils';
 
 const {ModifyCount, AddStorage, EditEnvironment, common} = Kebab.factory;
@@ -117,7 +127,63 @@ const DeploymentsDetailsPage = props => <DetailsPage
 />;
 
 const Row = props => <WorkloadListRow {...props} kind="Deployment" actions={menuActions} />;
-const DeploymentsList = props => <List {...props} Header={WorkloadListHeader} Row={Row} />;
+
+const kind = 'Deployment';
+
+const DeploymentTableRow = (o, index) => {
+  return {
+    id: index,
+    cells: [
+    {
+      title: <ResourceLink kind={kind} name={o.metadata.name} namespace={o.metadata.namespace} title={o.metadata.uid} />,
+    },
+    {
+      title: <ResourceLink kind="Namespace" name={o.metadata.namespace} title={o.metadata.namespace} />,
+    },
+    {
+      title: <LabelList kind={kind} labels={o.metadata.labels} />,
+    },
+    {
+      title: <Link to={`${resourcePath(kind, o.metadata.name, o.metadata.namespace)}/pods`} title="pods">
+        {o.status.replicas || 0} of {o.spec.replicas} pods
+      </Link>,
+    },
+    {
+      title: <Selector selector={o.spec.selector} namespace={o.metadata.namespace} />,
+    },
+    {
+      title: <div className="dropdown-kebab-pf">
+        <ResourceKebab actions={menuActions} kind={kind} resource={o} />
+      </div>,
+      props: { className: 'pf-c-table__action'},
+    },
+  ]
+  };
+};
+
+const DeploymentTableRows = componentProps =>
+  _.map(componentProps.data, (obj, index) => obj && obj.metadata && DeploymentTableRow(obj, index));
+
+const DeploymentTableHeader = props => {
+  return [
+    { title: 'Name', sortField: 'metadata.name', transforms: [sortable], cellTransforms: [headerCol()], props},
+    { title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable], props },
+    { title: 'Labels', sortField: 'metadata.labels', transforms: [sortable], props},
+    { title: 'Status', sortField: 'metadata.labels', props: {...props, className: 'meta-status'},
+    { title: 'Pod Selector', sortField: 'spec.selector', transforms: [sortable], props },
+    // todo: add support for table actions api: https://github.com/patternfly/patternfly-react/pull/1441
+    // this is for the empty actions/kebab column header
+    { title: '' },
+  ];
+};
+
+const DeploymentsList = props => <React.Fragment>
+  <Table {...props} aria-label="Deployments" Header={DeploymentTableHeader} Rows={DeploymentTableRows} virtualize />
+  {/* <br />
+  <br />
+  <List {...props} Header={WorkloadListHeader} Row={Row} /> */}
+</React.Fragment>;
+
 const DeploymentsPage = props => <ListPage canCreate={true} ListComponent={DeploymentsList} {...props} />;
 
 export {DeploymentsList, DeploymentsPage, DeploymentsDetailsPage};

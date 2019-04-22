@@ -4,8 +4,8 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 
 import { annotationsModal, configureReplicaCountModal, taintsModal, tolerationsModal, labelsModal, podSelectorModal, deleteModal } from '../modals';
-import { DropdownMixin } from './dropdown';
-import { history, resourceObjPath } from './index';
+import { resourceObjPath } from './index';
+import { OneOf, Dropdown, KebabToggle, DropdownItem, DropdownPosition } from '@patternfly/react-core';
 import { referenceForModel, K8sResourceKind, K8sResourceKindReference, K8sKind } from '../../module/k8s';
 import { connectToModel } from '../../kinds';
 
@@ -103,34 +103,69 @@ export const ResourceKebab = connectToModel((props: ResourceKebabProps) => {
   />;
 });
 
-export class Kebab extends DropdownMixin {
+export class Kebab extends React.Component<KebabProps, KebabState> {
   static factory: KebabFactory = kebabFactory;
-  private onClick = this.onClick_.bind(this);
-
-  onClick_(event, option) {
-    event.preventDefault();
-
-    if (option.callback) {
-      option.callback();
-    }
-
-    if (option.href) {
-      history.push(option.href);
-    }
-
-    this.hide();
+  constructor(props) {
+    super(props);
+    this.state = {
+      isOpen: false
+    };
   }
+
+  onToggle = isOpen => {
+    this.setState({
+      isOpen
+    });
+  };
+
+  onSelect = event => {
+    this.setState({
+      isOpen: !this.state.isOpen
+    });
+  };
 
   render() {
-    const {options, isDisabled} = this.props;
+    const { isOpen } = this.state;
+    const { options, isDisabled, position, id } = this.props;
 
-    return <div ref={this.dropdownElement} className="co-kebab">
-      <button type="button" aria-label="Actions" disabled={isDisabled} aria-haspopup="true" className="btn btn-link co-kebab__button" onClick={this.toggle}>
-        <span className="fa fa-ellipsis-v co-kebab__icon" aria-hidden="true"></span>
-      </button>
-      {(!isDisabled && this.state.active) && <KebabItems options={options} onClick={this.onClick} />}
-    </div>;
+    const items = [];
+    if(options && options.length){
+      options.forEach((option) => {
+        items.push(
+          <DropdownItem key={option.label} 
+            isDisabled={isDisabled} 
+            onClick={option.callback} 
+            href={option.href}
+            component={ option.href ? "a" : "button"}>
+            {option.label}
+          </DropdownItem>
+        );
+      })
+    }
+
+    return (
+      <Dropdown
+        id={id}
+        onSelect={this.onSelect}
+        position={position || DropdownPosition.right}
+        toggle={<KebabToggle onToggle={this.onToggle} />}
+        isOpen={isOpen}
+        isPlain
+        dropdownItems={items}
+      />
+    );
   }
+}
+
+export type KebabProps = {
+  id?: string;
+  isDisabled?: boolean;
+  options: KebabOption[];
+  position?: OneOf<typeof DropdownPosition, keyof typeof DropdownPosition>;
+}
+
+export type KebabState = {
+  isOpen: boolean;
 }
 
 export type KebabOption = {

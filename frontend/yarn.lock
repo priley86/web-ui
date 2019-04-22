@@ -130,6 +130,11 @@
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@mapbox/whoots-js/-/whoots-js-3.1.0.tgz#497c67a1cef50d1a2459ba60f315e448d2ad87fe"
 
+"@patternfly/patternfly@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@patternfly/patternfly/-/patternfly-2.0.0.tgz#8c701445c7a4fc89a128c1b4a99076d1c37dcbcb"
+  integrity sha512-Ezh5TDKEO0lFZ5DM+TrOqtsv82LjVXZX5kFLkpM2tZf4dIUCfrhWzGGcQg3Bb/DMU0wkicwuzCu7oqDw3ZoZxg==
+
 "@patternfly/patternfly@2.4.1":
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/@patternfly/patternfly/-/patternfly-2.4.1.tgz#2b82e946ec2cdf5a78535ba2b9d514151688dc2d"
@@ -148,7 +153,20 @@
     exenv "^1.2.2"
     focus-trap-react "^4.0.1"
 
-"@patternfly/react-icons@^3.7.4":
+"@patternfly/react-core@^3.2.0":
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@patternfly/react-core/-/react-core-3.2.2.tgz#995432d44455c056a6fcbc695c0c9dc2d3c00472"
+  integrity sha512-S6tW9cv/p9RiGHrR/zF0cuS30gzeaZfPnKcsxkyehb7InPe0LG07SDzW4IX6b42C3uXyxeCQTHOGWqkJ8GxcDg==
+  dependencies:
+    "@patternfly/react-icons" "^3.7.4"
+    "@patternfly/react-styles" "^3.0.2"
+    "@patternfly/react-tokens" "^2.3.3"
+    "@tippy.js/react" "^1.1.1"
+    emotion "^9.2.9"
+    exenv "^1.2.2"
+    focus-trap-react "^4.0.1"
+
+"@patternfly/react-icons@^3.7.3", "@patternfly/react-icons@^3.7.4":
   version "3.7.4"
   resolved "https://registry.yarnpkg.com/@patternfly/react-icons/-/react-icons-3.7.4.tgz#e4abe683de7208682dea257355768c4aefd1ff79"
   integrity sha512-YgKQt7qloOvGJEt3kRJLlRe6eJMwU0YbfuC2bsTzcmCReI5cSNv0ZyuV9rOIOpB5rRaNPmCm9RjKBCixFjcaYg==
@@ -171,10 +189,31 @@
     relative "^3.0.2"
     resolve-from "^4.0.0"
 
+"@patternfly/react-table@git+https://git@github.com/priley86/react-table.git":
+  version "2.1.0"
+  resolved "git+https://git@github.com/priley86/react-table.git#5a8a70634afe5df4c73281060c92bbbd5db0118a"
+  dependencies:
+    "@patternfly/patternfly" "2.0.0"
+    "@patternfly/react-core" "^3.2.0"
+    "@patternfly/react-icons" "^3.7.3"
+    "@patternfly/react-styles" "^3.0.2"
+    exenv "^1.2.2"
+    reactabular-table "^8.14.0"
+
 "@patternfly/react-tokens@^2.3.3":
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/@patternfly/react-tokens/-/react-tokens-2.3.3.tgz#6fea36b284a36d4404b4bd75ddcc3fa5a833654f"
   integrity sha512-+2SSGvOV1rZr1l6+p2QzORVJhpOKjrHqCBfkp10La7O93+mVLYU0vugTp1elhxeh32IuLCJAPDLrCJPBAfmYKw==
+
+"@patternfly/react-virtualized-extension@git+https://git@github.com/priley86/react-virtualized-extension.git":
+  version "2.1.0"
+  resolved "git+https://git@github.com/priley86/react-virtualized-extension.git#f7c06d5333f0f6a1ff3c6c5664afa7f5d1f28b35"
+  dependencies:
+    "@patternfly/patternfly" "2.4.1"
+    "@patternfly/react-icons" "^3.7.3"
+    "@patternfly/react-styles" "^3.0.2"
+    exenv "^1.2.2"
+    reactabular-table "^8.14.0"
 
 "@plotly/d3-sankey@^0.5.1":
   version "0.5.1"
@@ -10132,14 +10171,15 @@ react-dnd@^2.6.0:
     lodash "^4.2.0"
     prop-types "^15.5.10"
 
-react-dom@16.x:
-  version "16.3.1"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.3.1.tgz#6a3c90a4fb62f915bdbcf6204422d93a7d4ca573"
+react-dom@16.8.6:
+  version "16.8.6"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.8.6.tgz#71d6303f631e8b0097f56165ef608f051ff6e10f"
+  integrity sha512-1nL7PIq9LTL3fthPqwkvr2zY7phIPjYrT0jp4HjyEQrEROnw4dG41VVwi/wfoCneoleqrNX7iAD+pXebJZwrwA==
   dependencies:
-    fbjs "^0.8.16"
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    prop-types "^15.6.0"
+    prop-types "^15.6.2"
+    scheduler "^0.13.6"
 
 react-fontawesome@^1.6.1:
   version "1.6.1"
@@ -10324,14 +10364,15 @@ react-virtualized@9.x:
     prop-types "^15.6.0"
     react-lifecycles-compat "^3.0.4"
 
-react@16.6.3:
-  version "16.6.3"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.6.3.tgz#25d77c91911d6bbdd23db41e70fb094cc1e0871c"
+react@16.8.6:
+  version "16.8.6"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.8.6.tgz#ad6c3a9614fd3a4e9ef51117f54d888da01f2bbe"
+  integrity sha512-pC0uMkhLaHm11ZSJULfOBqV4tIZkx87ZLvbbQYunNixAAvjnC+snJCg0XQXn9VIsttVsbZP/H/ewzgsd5fxKXw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.2"
-    scheduler "^0.11.2"
+    scheduler "^0.13.6"
 
 reactabular-table@^8.14.0:
   version "8.14.0"
@@ -11248,9 +11289,10 @@ schedule@^0.5.0:
   dependencies:
     object-assign "^4.1.1"
 
-scheduler@^0.11.2:
-  version "0.11.2"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.11.2.tgz#a8db5399d06eba5abac51b705b7151d2319d33d3"
+scheduler@^0.13.6:
+  version "0.13.6"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.13.6.tgz#466a4ec332467b31a91b9bf74e5347072e4cd889"
+  integrity sha512-IWnObHt413ucAYKsD9J1QShUKkbKLQQHdxRyw73sw4FN26iWr3DY/H34xGPe4nmL1DwXyWmSWmMrA9TfQbE/XQ==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
