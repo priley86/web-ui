@@ -132,7 +132,7 @@ const Row = props => <WorkloadListRow {...props} kind="Deployment" actions={menu
 
 const kind = 'Deployment';
 
-const DeploymentTableRow = (o) => {
+const DeploymentTableRow = (o, customData) => {
   return {
     id: o.metadata.uid,
     cells: [
@@ -161,8 +161,8 @@ const DeploymentTableRow = (o) => {
   };
 };
 
-const DeploymentTableRows = componentProps =>
-  _.map(componentProps.data, obj => obj && obj.metadata && DeploymentTableRow(obj));
+const DeploymentTableRows = ({componentProps, customData}) =>
+  _.map(componentProps.data, obj => obj && obj.metadata && DeploymentTableRow(obj, customData));
 
 const DeploymentTableHeader = props => {
   return [
@@ -195,7 +195,7 @@ const DeploymentTableHeader = props => {
 };
 
 const DeploymentsList = props => <React.Fragment>
-  <Table {...props} aria-label="Deployments" Header={DeploymentTableHeader} Rows={DeploymentTableRows} virtualize />
+  <Table {...props} aria-label="Deployments" Header={DeploymentTableHeader} Rows={DeploymentTableRows} virtualize customData={{a : 1}} />
   {/* existing list for comparison purposes only */}
   {false && <List {...props} Header={WorkloadListHeader} Row={Row} />}
 </React.Fragment>;
