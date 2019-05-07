@@ -103,60 +103,53 @@ export const ResourceKebab = connectToModel((props: ResourceKebabProps) => {
   />;
 });
 
-export class Kebab extends React.Component<KebabProps, KebabState> {
-  static factory: KebabFactory = kebabFactory;
-  constructor(props) {
-    super(props);
-    this.state = {
-      isOpen: false,
-    };
+const KebabHook: React.FC<KebabProps> = ({ options, isDisabled, position, id, children }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  function onToggle(open) {
+    setIsOpen(open);
   }
 
-  onToggle = isOpen => {
-    this.setState({
-      isOpen,
-    });
-  };
+  function onSelect() {
+    isOpen ? setIsOpen(false) : setIsOpen(true);
+  }
 
-  onSelect = () => {
-    this.setState({
-      isOpen: !this.state.isOpen,
+  let items = [];
+  if (options && options.length){
+    options.forEach((option) => {
+      items.push(
+        <DropdownItem key={option.label}
+          isDisabled={isDisabled}
+          onClick={option.callback}
+          href={option.href}
+          component={option.href ? 'a' : 'button'}>
+          {option.label}
+        </DropdownItem>
+      );
     });
-  };
+  } else {
+    //default to children if no options are passed, allowing custom jsx for items
+    items = children;
+  }
+
+  return (
+    <Dropdown
+      id={id}
+      onSelect={onSelect}
+      position={position || DropdownPosition.right}
+      toggle={<KebabToggle onToggle={onToggle} />}
+      isOpen={isOpen}
+      isPlain
+      dropdownItems={items}
+    />
+  );
+};
+
+export class Kebab extends React.Component<KebabProps> {
+  static factory: KebabFactory = kebabFactory;
 
   render() {
-    const { isOpen } = this.state;
-    const { options, isDisabled, position, id, children } = this.props;
-
-    let items = [];
-    if (options && options.length){
-      options.forEach((option) => {
-        items.push(
-          <DropdownItem key={option.label}
-            isDisabled={isDisabled}
-            onClick={option.callback}
-            href={option.href}
-            component={option.href ? 'a' : 'button'}>
-            {option.label}
-          </DropdownItem>
-        );
-      });
-    } else {
-      //default to children if no options are passed, allowing custom jsx for items
-      items = children;
-    }
-
-    return (
-      <Dropdown
-        id={id}
-        onSelect={this.onSelect}
-        position={position || DropdownPosition.right}
-        toggle={<KebabToggle onToggle={this.onToggle} />}
-        isOpen={isOpen}
-        isPlain
-        dropdownItems={items}
-      />
-    );
+    return <KebabHook {...this.props} />;
   }
 }
 
@@ -171,10 +164,6 @@ export type KebabProps = {
   options: KebabOption[];
   position?: OneOf<typeof DropdownPosition, keyof typeof DropdownPosition>;
   children?: React.ReactNode[];
-};
-
-export type KebabState = {
-  isOpen: boolean;
 };
 
 export type KebabAction = (kind, obj: K8sResourceKind) => KebabOption;
