@@ -161,7 +161,7 @@ const DeploymentTableRow = (o) => {
   };
 };
 
-const DeploymentTableRows = componentProps =>
+const DeploymentTableRows = ({componentProps}) =>
   _.map(componentProps.data, obj => obj && obj.metadata && DeploymentTableRow(obj));
 
 const DeploymentTableHeader = props => {

@@ -126,9 +126,9 @@ export class Kebab extends React.Component<KebabProps, KebabState> {
 
   render() {
     const { isOpen } = this.state;
-    const { options, isDisabled, position, id } = this.props;
+    const { options, isDisabled, position, id, children } = this.props;
 
-    const items = [];
+    let items = [];
     if (options && options.length){
       options.forEach((option) => {
         items.push(
@@ -141,6 +141,9 @@ export class Kebab extends React.Component<KebabProps, KebabState> {
           </DropdownItem>
         );
       });
+    } else {
+      //default to children if no options are passed, allowing custom jsx for items
+      items = children;
     }
 
     return (
@@ -167,6 +170,7 @@ export type KebabProps = {
   isDisabled?: boolean;
   options: KebabOption[];
   position?: OneOf<typeof DropdownPosition, keyof typeof DropdownPosition>;
+  children?: React.ReactNode[];
 };
 
 export type KebabState = {

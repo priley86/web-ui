@@ -353,10 +353,10 @@ export const Table = connect(stateToProps, {sortList: UIActions.sortList})(
     }
 
     render() {
-      const {Rows, label, mock, onSelect, selectedResourcesForKind, 'aria-label': ariaLabel, virtualize} = this.props;
+      const {Rows, label, mock, onSelect, selectedResourcesForKind, 'aria-label': ariaLabel, virtualize, customData} = this.props;
       const {sortBy, columns} = this.state;
       const componentProps: any = _.pick(this.props, ['data', 'filters', 'selected', 'match', 'kindObj']);
-      const rows = Rows(componentProps, selectedResourcesForKind);
+      const rows = Rows({componentProps, selectedResourcesForKind, customData});
 
       let children = null;
       if (rows){
@@ -436,6 +436,7 @@ export type TableInnerProps = {
   onSelect?: (event: React.MouseEvent, isSelected: boolean, rowIndex: number, rowData: IRowData, extraData: IExtraData) => void;
   staticFilters?: any[];
   virtualize?: boolean;
+  customData?: any;
 };
 
 export type TableInnerState = {
