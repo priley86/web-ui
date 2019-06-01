@@ -154,6 +154,7 @@
   table {
     thead {
       th {
+        font-size: $font-size-base;
         color: $color-text-secondary;
         font-weight: 400;
       }
@@ -478,9 +479,8 @@
   }
   &__head {
     color: $color-text-secondary;
-    font-size: ($font-size-base - 1);
+    font-size: $font-size-base;
     padding: 0 20px 10px 0; // right padding to maintain alignment with __body .row
-    text-transform: uppercase;
     a {
       cursor: pointer;
     }

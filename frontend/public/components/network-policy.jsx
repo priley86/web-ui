@@ -99,9 +99,9 @@ export const NetworkPoliciesPage = props => <ListPage {...props} ListComponent={
 
 
 const IngressHeader = () => <div className="row co-m-table-grid__head">
-  <div className="col-xs-4">target pods</div>
-  <div className="col-xs-5">from</div>
-  <div className="col-xs-3">to ports</div>
+  <div className="col-xs-4">Target Pods</div>
+  <div className="col-xs-5">From</div>
+  <div className="col-xs-3">To Ports</div>
 </div>;
 
 const IngressRow = ({ingress, namespace, podSelector}) => {
