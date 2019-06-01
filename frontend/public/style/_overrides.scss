@@ -203,7 +203,8 @@ tags-input .autocomplete .suggestion-item em {
   }
   th {
     padding-top: 0 !important;
-    text-transform: uppercase;
+    color: $color-text-secondary;
+    font-weight: 400;
   }
   thead > tr > th {
     border-bottom: 0;
