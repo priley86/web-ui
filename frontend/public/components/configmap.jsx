@@ -14,8 +14,8 @@ const kind = 'ConfigMap';
 const tableColumnClasses = [
   classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
   classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
-  classNames('pf-m-1-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
-  classNames('pf-m-3-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
   Kebab.columnClass,
 ];
 
