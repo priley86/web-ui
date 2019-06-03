@@ -5,7 +5,7 @@ import * as classNames from 'classnames';
 import { connectToFlags } from '../reducers/features';
 import { Conditions } from './conditions';
 import { FLAGS } from '../const';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, navFactory, ResourceKebab, SectionHeading, ResourceLink, ResourceSummary, Selector, StatusIconAndText } from './utils';
 import { ResourceEventStream } from './events';
 
@@ -20,19 +20,13 @@ const PVCStatus = ({pvc}) => {
 };
 
 const tableColumnClasses = [
-  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
-  classNames('pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
-  classNames('pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-2-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-2-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
+  classNames('pf-m-2-col-on-xl', 'pf-m-2-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
+  classNames('pf-m-3-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
+  classNames('pf-m-3-col-on-xl', 'pf-m-3-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
   Kebab.columnClass,
 ];
-
-const Header = props => <ListHeader>
-  <ColHead {...props} className="col-lg-2 col-md-2 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 col-sm-4 hidden-xs" sortField="status.phase">Status</ColHead>
-  <ColHead {...props} className="col-lg-3 col-md-3 hidden-sm hidden-xs" sortField="spec.volumeName">Persistent Volume</ColHead>
-  <ColHead {...props} className="col-lg-3 col-md-3 hidden-sm hidden-xs" sortField="spec.resources.requests.storage">Requested</ColHead>
-</ListHeader>;
 
 export const TableHeader = () => {
   return [
@@ -49,37 +43,22 @@ export const TableHeader = () => {
       props: { className: tableColumnClasses[2]},
     },
     {
-      title: '',
+      title: 'Persistent Volume', sortField: 'spec.volumeName', transforms: [sortable],
       props: { className: tableColumnClasses[3]},
+    },
+    {
+      title: 'Requested', sortField: 'spec.resources.requests.storage', transforms: [sortable],
+      props: { className: tableColumnClasses[4]},
+    },
+    {
+      title: '',
+      props: { className: tableColumnClasses[5]},
     },
   ];
 };
 TableHeader.displayName = 'TableHeader';
 
 const kind = 'PersistentVolumeClaim';
-const Row = ({obj}) => <div className="row co-resource-list__item">
-  <div className="col-lg-2 col-md-2 col-sm-4 col-xs-6">
-    <ResourceLink kind={kind} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-  </div>
-  <div className="col-lg-2 col-md-2 col-sm-4 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={obj.metadata.namespace} title={obj.metadata.namespace} />
-  </div>
-  <div className="col-lg-2 col-md-2 col-sm-4 hidden-xs">
-    <PVCStatus pvc={obj} />
-  </div>
-  <div className="col-lg-3 col-md-3 hidden-sm hidden-xs">
-    { _.get(obj, 'spec.volumeName') ?
-      <ResourceLink kind="PersistentVolume" name={obj.spec.volumeName} title={obj.spec.volumeName} />:
-      <div className="text-muted">No Persistent Volume</div>
-    }
-  </div>
-  <div className="col-lg-3 col-md-3 hidden-sm hidden-xs">
-    {_.get(obj, 'spec.resources.requests.storage', '-')}
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={kind} resource={obj} />
-  </div>
-</div>;
 
 export const TableRow = ({obj, index, key, style}) => {
   return (
@@ -94,6 +73,15 @@ export const TableRow = ({obj, index, key, style}) => {
         <PVCStatus pvc={obj} />
       </Vd>
       <Vd className={tableColumnClasses[3]}>
+        { _.get(obj, 'spec.volumeName') ?
+          <ResourceLink kind="PersistentVolume" name={obj.spec.volumeName} title={obj.spec.volumeName} />:
+          <div className="text-muted">No Persistent Volume</div>
+        }
+      </Vd>
+      <Vd className={tableColumnClasses[4]}>
+        {_.get(obj, 'spec.resources.requests.storage', '-')}
+      </Vd>
+      <Vd className={tableColumnClasses[5]}>
         <ResourceKebab actions={menuActions} kind={kind} resource={obj} />
       </Vd>
     </Vr>
@@ -164,10 +152,7 @@ const filters = [{
 }];
 
 
-export const PersistentVolumeClaimsList = props => <React.Fragment>
-  <Table {...props} aria-label="Persistent Volume Claims" Header={TableHeader} Row={TableRow} virtualize />
-  {false && <List {...props} Header={Header} Row={Row} /> }
-</React.Fragment>;
+export const PersistentVolumeClaimsList = props => <Table {...props} aria-label="Persistent Volume Claims" Header={TableHeader} Row={TableRow} virtualize />;
 export const PersistentVolumeClaimsPage = props => {
   const createProps = {
     to: `/k8s/ns/${props.namespace || 'default'}/persistentvolumeclaims/~new/form`,

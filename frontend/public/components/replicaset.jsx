@@ -3,7 +3,7 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 
-import { DetailsPage, List, ListPage, WorkloadListHeader, WorkloadListRow, Table } from './factory';
+import { DetailsPage, ListPage, Table } from './factory';
 import {
   Kebab,
   ContainerTable,
@@ -77,8 +77,6 @@ const ReplicaSetsDetailsPage = props => <DetailsPage
   pages={[details(Details), editYaml(), pods(), envEditor(environmentComponent), events(ResourceEventStream)]}
 />;
 
-const Row = props => <WorkloadListRow {...props} kind="ReplicaSet" actions={replicaSetMenuActions} />;
-
 const kind = 'ReplicaSet';
 
 const ReplicaSetTableRow = ({obj, index, key, style}) => {
@@ -94,10 +92,7 @@ const ReplicaSetTableHeader = () => {
 };
 ReplicaSetTableHeader.displayName = 'ReplicaSetTableHeader';
 
-const ReplicaSetsList = props => <React.Fragment>
-  <Table {...props} aria-label="Replicate Sets" Header={ReplicaSetTableHeader} Row={ReplicaSetTableRow} virtualize />
-  {false && <List {...props} Header={WorkloadListHeader} Row={Row} /> }
-</React.Fragment>;
+const ReplicaSetsList = props => <Table {...props} aria-label="Replicate Sets" Header={ReplicaSetTableHeader} Row={ReplicaSetTableRow} virtualize />;
 const ReplicaSetsPage = props => <ListPage canCreate={true} ListComponent={ReplicaSetsList} {...props} />;
 
 export {ReplicaSetsList, ReplicaSetsPage, ReplicaSetsDetailsPage};

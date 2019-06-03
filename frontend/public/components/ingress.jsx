@@ -2,7 +2,7 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, SectionHeading, LabelList, ResourceKebab, ResourceIcon, detailsPage, EmptyBox, navFactory, ResourceLink, ResourceSummary } from './utils';
 
 const menuActions = Kebab.factory.common;
@@ -43,13 +43,6 @@ const tableColumnClasses = [
 
 const kind = 'Ingress';
 
-const IngressListHeader = props => <ListHeader>
-  <ColHead {...props} className="col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-4 hidden-xs" sortField="metadata.labels">Labels</ColHead>
-  <ColHead {...props} className="col-md-3 hidden-sm hidden-xs" sortFunc="ingressValidHosts">Hosts</ColHead>
-</ListHeader>;
-
 export const IngressTableHeader = () => {
   return [
     {
@@ -74,23 +67,6 @@ export const IngressTableHeader = () => {
   ];
 };
 IngressTableHeader.displayName = 'IngressTableHeader';
-
-const IngressListRow = ({obj: ingress}) => <ResourceRow obj={ingress}>
-  <div className="col-md-3 col-sm-4 col-xs-6">
-    <ResourceLink kind="Ingress" name={ingress.metadata.name}
-      namespace={ingress.metadata.namespace} title={ingress.metadata.uid} />
-  </div>
-  <div className="col-md-3 col-sm-4 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={ingress.metadata.namespace} title={ingress.metadata.namespace} />
-  </div>
-  <div className="col-md-3 col-sm-4 hidden-xs">
-    <LabelList kind="Ingress" labels={ingress.metadata.labels} />
-  </div>
-  <div className="col-md-3 hidden-sm hidden-xs">{getHosts(ingress)}</div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind="Ingress" resource={ingress} />
-  </div>
-</ResourceRow>;
 
 const IngressTableRow = ({obj: ingress, index, key, style}) => {
   return (
@@ -199,10 +175,8 @@ const IngressesDetailsPage = props => <DetailsPage
   menuActions={menuActions}
   pages={[navFactory.details(detailsPage(Details)), navFactory.editYaml()]}
 />;
-const IngressesList = props => <React.Fragment>
-  <Table {...props} aria-label="Ingresses" Header={IngressTableHeader} Row={IngressTableRow} virtualize />
-  {false && <List {...props} Header={IngressListHeader} Row={IngressListRow} /> }
-</React.Fragment>;
+const IngressesList = props => <Table {...props} aria-label="Ingresses" Header={IngressTableHeader} Row={IngressTableRow} virtualize />;
+
 const IngressesPage = props => <ListPage ListComponent={IngressesList} canCreate={true} {...props} />;
 
 export {IngressesList, IngressesPage, IngressesDetailsPage};

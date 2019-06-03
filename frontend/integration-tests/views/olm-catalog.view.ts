@@ -2,7 +2,7 @@ import { browser, $, $$, by, element, ExpectedConditions as until } from 'protra
 
 import * as crudView from './crud.view';
 
-const rowSelector = '.co-resource-list__item';
+const rowSelector = '.ReactVirtualized__VirtualGrid__innerScrollContainer tr';
 export const entryRows = $$(rowSelector);
 export const entryRowFor = (name: string) => element(by.cssContainingText(rowSelector, name));
 

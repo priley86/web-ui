@@ -5,7 +5,7 @@ import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 import { K8sResourceKindReference, referenceFor, K8sResourceKind, k8sPatch, K8sKind } from '../module/k8s';
 import { cloneBuild, formatBuildDuration, getBuildNumber } from '../module/k8s/builds';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { errorModal, confirmModal } from './modals';
 import {
   AsyncComponent,
@@ -259,13 +259,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const BuildsHeader = props => <ListHeader>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="status.phase">Status</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="metadata.creationTimestamp">Created</ColHead>
-</ListHeader>;
-
 export const BuildsTableHeader = () => {
   return [
     {
@@ -290,24 +283,6 @@ export const BuildsTableHeader = () => {
   ];
 };
 BuildsTableHeader.displayName = 'BuildsTableHeader';
-
-const BuildsRow: React.SFC<BuildsRowProps> = ({ obj }) => <div className="row co-resource-list__item">
-  <div className="col-sm-3 col-xs-6">
-    <ResourceLink kind={BuildsReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-  </div>
-  <div className="col-sm-3 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={obj.metadata.namespace} />
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    <StatusIconAndText status={obj.status.phase} />
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    {fromNow(obj.metadata.creationTimestamp)}
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={BuildsReference} resource={obj} />
-  </div>
-</div>;
 
 export const BuildsTableRow: React.FC<BuildsTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -338,10 +313,8 @@ export type BuildsTableRowProps = {
   style: object;
 };
 
-export const BuildsList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Builds" Header={BuildsTableHeader} Row={BuildsTableRow} virtualize />
-  {false && <List {...props} Header={BuildsHeader} Row={BuildsRow} /> }
-</React.Fragment>;
+export const BuildsList: React.SFC = props => <Table {...props} aria-label="Builds" Header={BuildsTableHeader} Row={BuildsTableRow} virtualize />;
+
 BuildsList.displayName = 'BuildsList';
 
 export const buildPhase = build => build.status.phase;
@@ -367,10 +340,6 @@ export const BuildsPage: React.SFC<BuildsPageProps> = props =>
     rowFilters={filters}
   />;
 BuildsPage.displayName = 'BuildsListPage';
-
-export type BuildsRowProps = {
-  obj: any,
-};
 
 export type BuildsDetailsProps = {
   obj: any,

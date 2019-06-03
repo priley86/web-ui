@@ -2,7 +2,7 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, navFactory, ResourceKebab, ResourceLink, ResourceSummary, SectionHeading } from './utils';
 import { K8sResourceKind, referenceForCRD } from '../module/k8s';
 
@@ -27,14 +27,6 @@ const tableColumnClasses = [
   classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
   Kebab.columnClass,
 ];
-
-const CRDHeader = props => <ListHeader>
-  <ColHead {...props} className="col-lg-3 col-md-4 col-sm-4 col-xs-6" sortField="spec.names.kind">Name</ColHead>
-  <ColHead {...props} className="col-lg-3 col-md-4 col-sm-4 col-xs-6" sortField="spec.group">Group</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 col-sm-4 hidden-xs" sortField="spec.version">Version</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortField="spec.scope">Namespaced</ColHead>
-  <ColHead {...props} className="col-lg-2 hidden-md hidden-sm hidden-xs">Established</ColHead>
-</ListHeader>;
 
 export const CRDTableHeader = () => {
   return [
@@ -66,33 +58,6 @@ const isEstablished = conditions => {
 };
 
 const namespaced = crd => crd.spec.scope === 'Namespaced';
-
-const CRDRow = ({obj: crd}) => <div className="row co-resource-list__item">
-  <div className="col-lg-3 col-md-4 col-sm-4 col-xs-6">
-    <span className="co-resource-item">
-      <ResourceLink kind="CustomResourceDefinition" name={crd.metadata.name} namespace={crd.metadata.namespace} displayName={_.get(crd, 'spec.names.kind')} />
-    </span>
-  </div>
-  <div className="col-lg-3 col-md-4 col-sm-4 col-xs-6 co-break-word">
-    { crd.spec.group }
-  </div>
-  <div className="col-lg-2 col-md-2 col-sm-4 hidden-xs">
-    { crd.spec.version }
-  </div>
-  <div className="col-lg-2 col-md-2 hidden-sm hidden-xs">
-    { namespaced(crd) ? 'Yes' : 'No' }
-  </div>
-  <div className="col-lg-2 hidden-md hidden-sm hidden-xs">
-    {
-      isEstablished(crd.status.conditions)
-        ? <span><i className="pficon pficon-ok" aria-hidden="true"></i></span>
-        : <span><i className="fa fa-ban" aria-hidden="true"></i></span>
-    }
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind="CustomResourceDefinition" resource={crd} />
-  </div>
-</div>;
 
 const CRDTableRow: React.FC<CRDTableRowProps> = ({obj: crd, index, key, style}) => {
   return (
@@ -139,10 +104,7 @@ const Details = ({obj: crd}) => {
   </div>;
 };
 
-export const CustomResourceDefinitionsList: React.SFC<CustomResourceDefinitionsListProps> = props => <React.Fragment>
-  <Table {...props} aria-label="Custom Resource Definitions" Header={CRDTableHeader} Row={CRDTableRow} defaultSortField="spec.names.kind" virtualize />
-  {false && <List {...props} Header={CRDHeader} Row={CRDRow} defaultSortField="spec.names.kind" />}
-</React.Fragment>;
+export const CustomResourceDefinitionsList: React.SFC<CustomResourceDefinitionsListProps> = props => <Table {...props} aria-label="Custom Resource Definitions" Header={CRDTableHeader} Row={CRDTableRow} defaultSortField="spec.names.kind" virtualize />;
 
 export const CustomResourceDefinitionsPage: React.SFC<CustomResourceDefinitionsPageProps> = props => <ListPage {...props} ListComponent={CustomResourceDefinitionsList} kind="CustomResourceDefinition" canCreate={true} />;
 export const CustomResourceDefinitionsDetailsPage = props => <DetailsPage {...props} menuActions={menuActions} pages={[navFactory.details(Details), navFactory.editYaml()]} />;

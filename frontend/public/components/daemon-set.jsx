@@ -3,12 +3,8 @@ import { Link } from 'react-router-dom';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 import {
-  ColHead,
   DetailsPage,
-  List,
-  ListHeader,
   ListPage,
-  ResourceRow,
   Table,
   Vr,
   Vd,
@@ -42,14 +38,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const DaemonSetHeader = props => <ListHeader>
-  <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-lg-3 col-md-4 col-sm-4 hidden-xs" sortField="metadata.labels">Labels</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortFunc="daemonsetNumScheduled">Status</ColHead>
-  <ColHead {...props} className="col-lg-3 hidden-md hidden-sm hidden-xs" sortField="spec.selector">Pod Selector</ColHead>
-</ListHeader>;
-
 export const DaemonSetTableHeader = () => {
   return [
     {
@@ -78,29 +66,6 @@ export const DaemonSetTableHeader = () => {
   ];
 };
 DaemonSetTableHeader.displayName = 'DaemonSetTableHeader';
-
-const DaemonSetRow = ({obj: daemonset}) => <ResourceRow obj={daemonset}>
-  <div className="col-lg-2 col-md-3 col-sm-4 col-xs-6">
-    <ResourceLink kind="DaemonSet" name={daemonset.metadata.name} namespace={daemonset.metadata.namespace} title={daemonset.metadata.uid} />
-  </div>
-  <div className="col-lg-2 col-md-3 col-sm-4 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={daemonset.metadata.namespace} title={daemonset.metadata.namespace} />
-  </div>
-  <div className="col-lg-3 col-md-4 col-sm-4 hidden-xs">
-    <LabelList kind="DaemonSet" labels={daemonset.metadata.labels} />
-  </div>
-  <div className="col-lg-2 col-md-2 hidden-sm hidden-xs">
-    <Link to={`/k8s/ns/${daemonset.metadata.namespace}/daemonsets/${daemonset.metadata.name}/pods`} title="pods">
-      {daemonset.status.currentNumberScheduled} of {daemonset.status.desiredNumberScheduled} pods
-    </Link>
-  </div>
-  <div className="col-lg-3 hidden-md hidden-sm hidden-xs">
-    <Selector selector={daemonset.spec.selector} namespace={daemonset.metadata.namespace} />
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind="DaemonSet" resource={daemonset} />
-  </div>
-</ResourceRow>;
 
 const DaemonSetTableRow = ({obj: daemonset, index, key, style}) => {
   return (
@@ -169,10 +134,8 @@ const environmentComponent = (props) => <EnvironmentPage
   readOnly={false}
 />;
 const {details, pods, editYaml, envEditor, events} = navFactory;
-const DaemonSets = props => <React.Fragment>
-  <Table {...props} aria-label="Daemon Sets" Header={DaemonSetTableHeader} Row={DaemonSetTableRow} virtualize />
-  {false && <List {...props} Header={DaemonSetHeader} Row={DaemonSetRow} /> }
-</React.Fragment>;
+const DaemonSets = props => <Table {...props} aria-label="Daemon Sets" Header={DaemonSetTableHeader} Row={DaemonSetTableRow} virtualize />;
+
 const DaemonSetsPage = props => <ListPage canCreate={true} ListComponent={DaemonSets} {...props} />;
 const DaemonSetsDetailsPage = props => <DetailsPage
   {...props}

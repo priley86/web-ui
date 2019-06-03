@@ -76,15 +76,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const ReportsHeader = props => <ListHeader>
-  <ColHead {...props} className="col-lg-3 col-md-3 col-xs-4" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-3 col-xs-4" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-lg-2 hidden-md hidden-sm hidden-xs">Report Generation Query</ColHead>
-  <ColHead {...props} className="col-lg-1 col-md-2 col-xs-4" sortField="spec.status.phase">Status</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortField="spec.reportingStart">Reporting Start</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortField="spec.reportingEnd">Reporting End</ColHead>
-</ListHeader>;
-
 export const ReportsTableHeader = () => {
   return [
     {
@@ -116,22 +107,6 @@ export const ReportsTableHeader = () => {
   ];
 };
 ReportsTableHeader.displayName = 'ReportsTableHeader';
-
-const ReportsRow: React.SFC<ReportsRowProps> = ({obj}) => {
-  return <div className="row co-resource-list__item">
-    <div className="col-lg-3 col-md-3 col-xs-4">
-      <ResourceLink kind={ReportReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-    </div>
-    <div className="col-lg-2 col-md-3 col-xs-4"><ResourceLink kind="Namespace" name={obj.metadata.namespace} namespace={undefined} title={obj.metadata.namespace} /></div>
-    <div className="col-lg-2 hidden-md hidden-sm hidden-xs"><ResourceLink kind={ReportGenerationQueryReference} name={_.get(obj, ['spec', 'generationQuery'])} namespace={obj.metadata.namespace} title={obj.metadata.namespace} /></div>
-    <div className="col-lg-1 col-md-2 col-xs-4">{_.get(obj, ['status', 'phase'])}</div>
-    <div className="col-lg-2 col-md-2 hidden-sm hidden-xs"><Timestamp timestamp={_.get(obj, ['spec', 'reportingStart'])} /></div>
-    <div className="col-lg-2 col-md-2 hidden-sm hidden-xs"><Timestamp timestamp={_.get(obj, ['spec', 'reportingEnd'])} /></div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={menuActions} kind={ReportReference} resource={obj} />
-    </div>
-  </div>;
-};
 
 const ReportsTableRow: React.FC<ReportsTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -444,10 +419,8 @@ const reportsPages = [
 ];
 
 const EmptyMsg = () => <MsgBox title="No reports have been generated" detail="Reports allow resource usage and cost to be tracked per namespace, pod, and more." />;
-export const ReportsList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Reports" Header={ReportsTableHeader} Row={ReportsTableRow} EmptyMsg={EmptyMsg} />
-  {false && <List {...props} Header={ReportsHeader} Row={ReportsRow} EmptyMsg={EmptyMsg} /> }
-</React.Fragment>;
+
+export const ReportsList: React.SFC = props => <Table {...props} aria-label="Reports" Header={ReportsTableHeader} Row={ReportsTableRow} EmptyMsg={EmptyMsg} />;
 
 const ReportsPage_: React.SFC<ReportsPageProps> = props => {
   if (flagPending(props.flags[FLAGS.CHARGEBACK])) {
@@ -555,10 +528,6 @@ export const ReportGenerationQueriesDetailsPage: React.SFC<ReportGenerationQueri
   return <DetailsPage {...props} kind={ReportGenerationQueryReference} menuActions={menuActions} pages={reportGenerationQueryPages} />;
 };
 
-export type ReportsRowProps = {
-  obj: any,
-};
-
 export type ReportsDetailsProps = {
   obj: any,
 };
@@ -616,7 +585,6 @@ export type ReportGenerationQueriesDetailsPageProps = {
   match: any,
 };
 
-ReportsRow.displayName = 'ReportsRow';
 ReportsList.displayName = 'ReportsList';
 ReportsPage.displayName = 'ReportsPage';
 ReportsDetailsPage.displayName = 'ReportsDetailsPage';

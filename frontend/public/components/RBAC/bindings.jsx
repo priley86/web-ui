@@ -8,7 +8,7 @@ import { sortable } from '@patternfly/react-table';
 import { ClusterRoleBindingModel } from '../../models';
 import { getQN, k8sCreate, k8sPatch, referenceFor } from '../../module/k8s';
 import * as UIActions from '../../actions/ui';
-import { ColHead, List, ListHeader, MultiListPage, ResourceRow, Table, Vr, Vd } from '../factory';
+import { MultiListPage, Table, Vr, Vd } from '../factory';
 import { RadioGroup } from '../radio';
 import { confirmModal } from '../modals';
 import {
@@ -117,14 +117,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const Header = props => <ListHeader>
-  <ColHead {...props} className="col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-4 hidden-xs" sortField="roleRef.name">Role Ref</ColHead>
-  <ColHead {...props} className="col-md-2 hidden-sm hidden-xs" sortField="subject.kind">Subject Kind</ColHead>
-  <ColHead {...props} className="col-md-2 hidden-sm hidden-xs" sortField="subject.name">Subject Name</ColHead>
-  <ColHead {...props} className="col-md-2 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-</ListHeader>;
-
 export const RoleBindingsTableHeader = () => {
   return [
     {
@@ -170,27 +162,6 @@ export const RoleLink = ({binding}) => {
   return <ResourceLink kind={kind} name={binding.roleRef.name} namespace={ns} />;
 };
 
-const Row = ({obj: binding}) => <ResourceRow obj={binding}>
-  <div className="col-md-3 col-sm-4 col-xs-6">
-    <ResourceLink kind={bindingKind(binding)} name={binding.metadata.name} namespace={binding.metadata.namespace} className="co-resource-item__resource-name" />
-  </div>
-  <div className="col-md-3 col-sm-4 hidden-xs co-break-word">
-    <RoleLink binding={binding} />
-  </div>
-  <div className="col-md-2 hidden-sm hidden-xs co-break-word">
-    {binding.subject.kind}
-  </div>
-  <div className="col-md-2 hidden-sm hidden-xs co-break-word">
-    {binding.subject.name}
-  </div>
-  <div className="col-md-2 col-sm-4 col-xs-6 co-break-word">
-    {binding.metadata.namespace ? <ResourceLink kind="Namespace" name={binding.metadata.namespace} /> : 'all'}
-  </div>
-  <div className="dropdown-kebab-pf">
-    <BindingKebab binding={binding} />
-  </div>
-</ResourceRow>;
-
 const RoleBindingsTableRow = ({obj: binding, index, key, style}) => {
   return (
     <Vr id={binding.metadata.uid} index={index} trKey={key} style={style}>
@@ -219,10 +190,7 @@ RoleBindingsTableRow.displayName = 'RoleBindingsTableRow';
 
 const EmptyMsg = () => <MsgBox title="No Role Bindings Found" detail="Roles grant access to types of objects in the cluster. Roles are applied to a group or user via a Role Binding." />;
 
-export const BindingsList = props => <React.Fragment>
-  <Table {...props} aria-label="Role Bindings" Header={RoleBindingsTableHeader} Row={RoleBindingsTableRow} virtualize />
-  {false && <List {...props} EmptyMsg={EmptyMsg} Header={Header} Row={Row} /> }
-</React.Fragment>;
+export const BindingsList = props => <Table {...props} aria-label="Role Bindings" EmptyMsg={EmptyMsg} Header={RoleBindingsTableHeader} Row={RoleBindingsTableRow} virtualize />;
 
 export const bindingType = binding => {
   if (!binding) {

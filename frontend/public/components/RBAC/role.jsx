@@ -6,7 +6,7 @@ import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 import { flatten as bindingsFlatten } from './bindings';
 import { BindingName, BindingsList, RulesList } from './index';
-import { ColHead, DetailsPage, List, ListHeader, MultiListPage, ResourceRow, TextFilter, Table, Vr, Vd } from '../factory';
+import { DetailsPage, MultiListPage, TextFilter, Table, Vr, Vd } from '../factory';
 import { Kebab, SectionHeading, MsgBox, navFactory, ResourceKebab, ResourceLink, Timestamp } from '../utils';
 
 export const isSystemRole = role => _.startsWith(role.metadata.name, 'system:');
@@ -35,10 +35,6 @@ const roleColumnClasses = [
   Kebab.columnClass,
 ];
 
-const Header = props => <ListHeader>
-  <ColHead {...props} className="col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-</ListHeader>;
 
 export const RolesTableHeader = () => {
   return [
@@ -54,18 +50,6 @@ export const RolesTableHeader = () => {
   ];
 };
 RolesTableHeader.displayName = 'RolesTableHeader';
-
-const Row = ({obj: role}) => <div className="row co-resource-list__item">
-  <div className="col-xs-6">
-    <ResourceLink kind={roleKind(role)} name={role.metadata.name} namespace={role.metadata.namespace} />
-  </div>
-  <div className="col-xs-6 co-break-word">
-    {role.metadata.namespace ? <ResourceLink kind="Namespace" name={role.metadata.namespace} /> : 'all'}
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={roleKind(role)} resource={role} />
-  </div>
-</div>;
 
 const RolesTableRow = ({obj: role, index, key, style}) => {
   return (
@@ -152,13 +136,6 @@ const bindingsColumnClasses = [
   classNames('pf-m-2-col-on-sm'),
 ];
 
-const BindingHeader = props => <ListHeader>
-  <ColHead {...props} className="col-xs-4" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-xs-2" sortField="subject.kind">Subject Kind</ColHead>
-  <ColHead {...props} className="col-xs-4" sortField="subject.name">Subject Name</ColHead>
-  <ColHead {...props} className="col-xs-2" sortField="metadata.namespace">Namespace</ColHead>
-</ListHeader>;
-
 const BindingsTableHeader = () => {
   return [
     {
@@ -180,21 +157,6 @@ const BindingsTableHeader = () => {
 };
 BindingsTableHeader.displayName = 'BindingsTableHeader';
 
-const BindingRow = ({obj: binding}) => <ResourceRow obj={binding}>
-  <div className="col-xs-4">
-    <BindingName binding={binding} />
-  </div>
-  <div className="col-xs-2">
-    {binding.subject.kind}
-  </div>
-  <div className="col-xs-4">
-    {binding.subject.name}
-  </div>
-  <div className="col-xs-2">
-    {binding.namespace || 'all'}
-  </div>
-</ResourceRow>;
-
 const BindingsTableRow = ({obj: binding, index, key, style}) => {
   return (
     <Vr id={binding.metadata.uid} index={index} trKey={key} style={style}>
@@ -215,10 +177,7 @@ const BindingsTableRow = ({obj: binding, index, key, style}) => {
 };
 BindingsTableRow.displayName = 'BindingsTableRow';
 
-const BindingsListComponent = props => <React.Fragment>
-  <Table {...props} aria-label="Bindings" Header={BindingsTableHeader} Row={BindingsTableRow} virtualize />
-  {false && <BindingsList {...props} Header={BindingHeader} Row={BindingRow} /> }
-</React.Fragment>;
+const BindingsListComponent = props => <BindingsList {...props} Header={BindingsTableHeader} Row={BindingsTableRow} virtualize />;
 
 export const BindingsForRolePage = (props) => {
   const {match: {params: {name, ns}}, obj:{kind}} = props;
@@ -248,10 +207,7 @@ export const ClusterRolesDetailsPage = RolesDetailsPage;
 
 const EmptyMsg = () => <MsgBox title="No Roles Found" detail="Roles grant access to types of objects in the cluster. Roles are applied to a team or user via a Role Binding." />;
 
-const RolesList = props => <React.Fragment>
-  <Table {...props} aria-label="Roles" Header={RolesTableHeader} Row={RolesTableRow} virtualize />
-  {false && <List {...props} EmptyMsg={EmptyMsg} Header={Header} Row={Row} /> }
-</React.Fragment>;
+const RolesList = props => <Table {...props} aria-label="Roles" EmptyMsg={EmptyMsg} Header={RolesTableHeader} Row={RolesTableRow} virtualize />;
 
 export const roleType = role => {
   if (!role) {

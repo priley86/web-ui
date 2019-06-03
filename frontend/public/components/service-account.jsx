@@ -4,7 +4,7 @@ import { safeDump } from 'js-yaml';
 import { Base64 } from 'js-base64';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, SectionHeading, navFactory, ResourceKebab, ResourceLink, ResourceSummary } from './utils';
 import { fromNow } from './utils/datetime';
 import { k8sList } from '../module/k8s';
@@ -90,13 +90,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const Header = props => <ListHeader>
-  <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-sm-2 hidden-xs" sortField="secrets">Secrets</ColHead>
-  <ColHead {...props} className="col-sm-2 hidden-xs" sortField="metadata.creationTimestamp">Age</ColHead>
-</ListHeader>;
-
 export const ServiceAccountTableHeader = () => {
   return [
     {
@@ -120,30 +113,6 @@ export const ServiceAccountTableHeader = () => {
   ];
 };
 ServiceAccountTableHeader.displayName = 'ServiceAccountTableHeader';
-
-const ServiceAccountRow = ({obj: serviceaccount}) => {
-  const {metadata: {name, namespace, uid, creationTimestamp}, secrets} = serviceaccount;
-
-  return (
-    <ResourceRow obj={serviceaccount}>
-      <div className="col-sm-4 col-xs-6">
-        <ResourceLink kind="ServiceAccount" name={name} namespace={namespace} title={uid} />
-      </div>
-      <div className="col-sm-4 col-xs-6 co-break-word">
-        <ResourceLink kind="Namespace" name={namespace} title={namespace} /> {}
-      </div>
-      <div className="col-sm-2 hidden-xs">
-        {secrets ? secrets.length : 0}
-      </div>
-      <div className="col-sm-2 hidden-xs">
-        {fromNow(creationTimestamp)}
-      </div>
-      <div className="dropdown-kebab-pf">
-        <ResourceKebab actions={menuActions} kind="ServiceAccount" resource={serviceaccount} />
-      </div>
-    </ResourceRow>
-  );
-};
 
 const ServiceAccountTableRow = ({obj: serviceaccount, index, key, style}) => {
   const {metadata: {name, namespace, uid, creationTimestamp}, secrets} = serviceaccount;
@@ -192,9 +161,6 @@ const ServiceAccountsDetailsPage = props => <DetailsPage
   menuActions={menuActions}
   pages={[navFactory.details(Details), navFactory.editYaml()]}
 />;
-const ServiceAccountsList = props => <React.Fragment>
-  <Table {...props} aria-label="Service Accounts" Header={ServiceAccountTableHeader} Row={ServiceAccountTableRow} virtualize />
-  {false && <List {...props} Header={Header} Row={ServiceAccountRow} />}
-</React.Fragment>;
+const ServiceAccountsList = props => <Table {...props} aria-label="Service Accounts" Header={ServiceAccountTableHeader} Row={ServiceAccountTableRow} virtualize />;
 const ServiceAccountsPage = props => <ListPage ListComponent={ServiceAccountsList} {...props} canCreate={true} />;
 export {ServiceAccountsList, ServiceAccountsPage, ServiceAccountsDetailsPage};

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { FieldLevelHelp } from 'patternfly-react';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, MultiListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, MultiListPage, Table, Vr, Vd } from './factory';
 import { Kebab, SectionHeading, navFactory, ResourceKebab, ResourceLink, ResourceSummary, convertToBaseValue } from './utils';
 import { connectToFlags, flagPending } from '../reducers/features';
 import { FLAGS } from '../const';
@@ -48,11 +48,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const Header = props => <ListHeader>
-  <ColHead {...props} className="col-md-5 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-7 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-</ListHeader>;
-
 export const ResourceQuotaTableHeader = () => {
   return [
     {
@@ -67,18 +62,6 @@ export const ResourceQuotaTableHeader = () => {
   ];
 };
 ResourceQuotaTableHeader.displayName = 'ResourceQuotaTableHeader';
-
-const Row = ({obj: rq}) => <div className="row co-resource-list__item">
-  <div className="col-md-5 col-xs-6">
-    <ResourceLink kind={quotaKind(rq)} name={rq.metadata.name} namespace={rq.metadata.namespace} className="co-resource-item__resource-name" />
-  </div>
-  <div className="col-md-7 col-xs-6 co-break-word">
-    {rq.metadata.namespace ? <ResourceLink kind="Namespace" name={rq.metadata.namespace} title={rq.metadata.namespace} /> : 'None'}
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={quotaKind(rq)} resource={rq} />
-  </div>
-</div>;
 
 const ResourceQuotaTableRow = ({obj: rq, index, key, style}) => {
   return (
@@ -240,10 +223,7 @@ const Details = ({obj: rq}) => {
   </React.Fragment>;
 };
 
-export const ResourceQuotasList = props => <React.Fragment>
-  <Table {...props} aria-label="Resource Quoates" Header={ResourceQuotaTableHeader} Row={ResourceQuotaTableRow} virtualize />
-  {false && <List {...props} Header={Header} Row={Row} /> }
-</React.Fragment>;
+export const ResourceQuotasList = props => <Table {...props} aria-label="Resource Quoates" Header={ResourceQuotaTableHeader} Row={ResourceQuotaTableRow} virtualize />;
 
 export const quotaType = quota => {
   if (!quota) {

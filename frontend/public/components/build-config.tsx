@@ -4,7 +4,7 @@ import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 import { K8sResourceKind, K8sResourceKindReference, referenceFor } from '../module/k8s';
 import { startBuild } from '../module/k8s/builds';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { errorModal } from './modals';
 import {
   BuildHooks,
@@ -95,13 +95,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const BuildConfigsHeader = props => <ListHeader>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="metadata.labels">Labels</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="metadata.creationTimestamp">Created</ColHead>
-</ListHeader>;
-
 export const BuildConfigsTableHeader = () => {
   return [
     {
@@ -126,24 +119,6 @@ export const BuildConfigsTableHeader = () => {
   ];
 };
 BuildConfigsTableHeader.displayName = 'BuildConfigsTableHeader';
-
-const BuildConfigsRow: React.SFC<BuildConfigsRowProps> = ({obj}) => <div className="row co-resource-list__item">
-  <div className="col-sm-3 col-xs-6">
-    <ResourceLink kind={BuildConfigsReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-  </div>
-  <div className="col-sm-3 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={obj.metadata.namespace} />
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    <LabelList kind={BuildConfigsReference} labels={obj.metadata.labels} />
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    { fromNow(obj.metadata.creationTimestamp) }
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={BuildConfigsReference} resource={obj} />
-  </div>
-</div>;
 
 export const BuildConfigsTableRow: React.FC<BuildConfigsTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -187,10 +162,8 @@ const filters = [{
   })),
 }];
 
-export const BuildConfigsList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Build Configs" Header={BuildConfigsTableHeader} Row={BuildConfigsTableRow} virtualize />
-  {false && <List {...props} Header={BuildConfigsHeader} Row={BuildConfigsRow} /> }
-</React.Fragment>;
+export const BuildConfigsList: React.SFC = props => <Table {...props} aria-label="Build Configs" Header={BuildConfigsTableHeader} Row={BuildConfigsTableRow} virtualize />;
+
 BuildConfigsList.displayName = 'BuildConfigsList';
 
 export const BuildConfigsPage: React.SFC<BuildConfigsPageProps> = props =>
@@ -203,10 +176,6 @@ export const BuildConfigsPage: React.SFC<BuildConfigsPageProps> = props =>
     filterLabel={props.filterLabel}
     rowFilters={filters} />;
 BuildConfigsPage.displayName = 'BuildConfigsListPage';
-
-export type BuildConfigsRowProps = {
-  obj: any;
-};
 
 export type BuildConfigsDetailsProps = {
   obj: any;

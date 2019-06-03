@@ -5,7 +5,7 @@ import { sortable } from '@patternfly/react-table';
 import * as classNames from 'classnames';
 import { connectToFlags } from '../reducers/features';
 import { FLAGS } from '../const';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, navFactory, ResourceKebab, SectionHeading, ResourceLink, ResourceSummary, Selector, ExternalLink } from './utils';
 
 const { common } = Kebab.factory;
@@ -17,12 +17,6 @@ const tableColumnClasses = [
   classNames('pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
   Kebab.columnClass,
 ];
-
-const Header = props => <ListHeader>
-  <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-sm-4 hidden-xs" sortField="spec.podSelector">Pod Selector</ColHead>
-</ListHeader>;
 
 export const TableHeader = () => {
   return [
@@ -47,25 +41,6 @@ export const TableHeader = () => {
 TableHeader.displayName = 'TableHeader';
 
 const kind = 'NetworkPolicy';
-const Row = ({obj: np}) => <div className="row co-resource-list__item">
-  <div className="col-sm-4 col-xs-6">
-    <ResourceLink kind={kind} name={np.metadata.name} namespace={np.metadata.namespace} title={np.metadata.name} />
-  </div>
-  <div className="col-sm-4 col-xs-6 co-break-word">
-    <ResourceLink kind={'Namespace'} name={np.metadata.namespace} title={np.metadata.namespace} />
-  </div>
-
-  <div className="col-sm-4 hidden-xs co-break-word">
-    {
-      _.isEmpty(np.spec.podSelector) ?
-        <Link to={`/search/ns/${np.metadata.namespace}?kind=Pod`}>{`All pods within ${np.metadata.namespace}`}</Link> :
-        <Selector selector={np.spec.podSelector} namespace={np.metadata.namespace} />
-    }
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={kind} resource={np} />
-  </div>
-</div>;
 
 export const TableRow = ({obj: np, index, key, style}) => {
   return (
@@ -91,10 +66,8 @@ export const TableRow = ({obj: np, index, key, style}) => {
 };
 TableRow.displayName = 'TableRow';
 
-const NetworkPoliciesList = props => <React.Fragment>
-  <Table {...props} aria-label="Network Policies" Header={TableHeader} Row={TableRow} virtualize />
-  {false && <List {...props} Header={Header} Row={Row} /> }
-</React.Fragment>;
+const NetworkPoliciesList = props => <Table {...props} aria-label="Network Policies" Header={TableHeader} Row={TableRow} virtualize />;
+
 export const NetworkPoliciesPage = props => <ListPage {...props} ListComponent={NetworkPoliciesList} kind={kind} canCreate={true} />;
 
 

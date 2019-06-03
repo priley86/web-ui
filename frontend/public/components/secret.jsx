@@ -2,7 +2,7 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { SecretData } from './configmap-and-secret-data';
 import { Kebab, SectionHeading, ResourceKebab, ResourceLink, ResourceSummary, detailsPage, navFactory, resourceObjPath } from './utils';
 import { fromNow } from './utils/datetime';
@@ -53,14 +53,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const SecretHeader = props => <ListHeader>
-  <ColHead {...props} className="col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-4 hidden-xs" sortField="type">Type</ColHead>
-  <ColHead {...props} className="col-md-1 hidden-sm hidden-xs" sortFunc="dataSize">Size</ColHead>
-  <ColHead {...props} className="col-md-2 hidden-sm hidden-xs" sortField="metadata.creationTimestamp">Created</ColHead>
-</ListHeader>;
-
 export const SecretTableHeader = () => {
   return [
     {
@@ -89,26 +81,6 @@ export const SecretTableHeader = () => {
   ];
 };
 SecretTableHeader.displayName = 'SecretTableHeader';
-
-const SecretRow = ({obj: secret}) => {
-  const data = _.size(secret.data);
-  const age = fromNow(secret.metadata.creationTimestamp);
-
-  return <ResourceRow obj={secret}>
-    <div className="col-md-3 col-sm-4 col-xs-6">
-      <ResourceLink kind="Secret" name={secret.metadata.name} namespace={secret.metadata.namespace} title={secret.metadata.uid} />
-    </div>
-    <div className="col-md-3 col-sm-4 col-xs-6 co-break-word">
-      <ResourceLink kind="Namespace" name={secret.metadata.namespace} title={secret.metadata.namespace} />
-    </div>
-    <div className="col-md-3 col-sm-4 hidden-xs co-break-word">{secret.type}</div>
-    <div className="col-md-1 hidden-sm hidden-xs">{data}</div>
-    <div className="col-md-2 hidden-sm hidden-xs">{age}</div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={menuActions} kind="Secret" resource={secret} />
-    </div>
-  </ResourceRow>;
-};
 
 const SecretTableRow = ({obj: secret, index, key, style}) => {
   const data = _.size(secret.data);
@@ -144,10 +116,7 @@ const SecretDetails = ({obj: secret}) => {
   </React.Fragment>;
 };
 
-const SecretsList = props => <React.Fragment>
-  <Table {...props} aria-label="Secrets" Header={SecretTableHeader} Row={SecretTableRow} virtualize />
-  {false && <List {...props} Header={SecretHeader} Row={SecretRow} /> }
-</React.Fragment>;
+const SecretsList = props => <Table {...props} aria-label="Secrets" Header={SecretTableHeader} Row={SecretTableRow} virtualize />;
 SecretsList.displayName = 'SecretsList';
 
 const IMAGE_FILTER_VALUE = 'Image';

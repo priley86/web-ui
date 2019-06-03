@@ -6,7 +6,7 @@ import { Alert } from 'patternfly-react';
 import { sortable } from '@patternfly/react-table';
 import * as classNames from 'classnames';
 import { ProvidedAPIsPage, ProvidedAPIPage } from './clusterserviceversion-resource';
-import { DetailsPage, ListHeader, ColHead, List, ListPage, Table, Vr, Vd } from '../factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from '../factory';
 import { withFallback } from '../utils/error-boundary';
 import { referenceForModel, referenceFor, GroupVersionKind, K8sKind } from '../../module/k8s';
 import { ClusterServiceVersionModel } from '../../models';
@@ -49,14 +49,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-export const ClusterServiceVersionHeader: React.SFC = () => <ListHeader>
-  <ColHead className="col-lg-3 col-md-4 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead className="col-lg-2 col-md-2 col-sm-4 col-xs-6">Namespace</ColHead>
-  <ColHead className="col-lg-2 hidden-md hidden-sm hidden-xs">Deployment</ColHead>
-  <ColHead className="col-lg-2 col-md-3 col-sm-4 hidden-xs">Status</ColHead>
-  <ColHead className="col-lg-3 col-md-3 hidden-sm hidden-xs">Provided APIs</ColHead>
-</ListHeader>;
-
 export const ClusterServiceVersionTableHeader = () => {
   return [
     {
@@ -83,39 +75,6 @@ export const ClusterServiceVersionTableHeader = () => {
 ClusterServiceVersionTableHeader.displayName = 'ClusterServiceVersionTableHeader';
 
 const menuActions = [Kebab.factory.Edit, Kebab.factory.Delete];
-
-export const ClusterServiceVersionRow = withFallback<ClusterServiceVersionRowProps>(({obj}) => {
-  const route = `/k8s/ns/${obj.metadata.namespace}/${ClusterServiceVersionModel.plural}/${obj.metadata.name}`;
-
-  const installStatus = obj.status && obj.status.phase !== ClusterServiceVersionPhase.CSVPhaseFailed
-    ? <span>{_.get(obj, 'status.reason', ClusterServiceVersionPhase.CSVPhaseUnknown)}</span>
-    : <span className="co-error"><i className="fa fa-times-circle co-icon-space-r" /> Failed</span>;
-
-  return <div className="row co-resource-list__item">
-    <div className="col-lg-3 col-md-4 col-sm-4 col-xs-6" style={{display: 'flex', alignItems: 'center'}}>
-      <Link to={route}>
-        <ClusterServiceVersionLogo icon={_.get(obj, 'spec.icon', [])[0]} displayName={obj.spec.displayName} version={obj.spec.version} provider={obj.spec.provider} />
-      </Link>
-    </div>
-    <div className="col-lg-2 col-md-2 col-sm-4 col-xs-6">
-      <ResourceLink kind="Namespace" title={obj.metadata.namespace} name={obj.metadata.namespace} />
-    </div>
-    <div className="col-lg-2 hidden-md hidden-sm hidden-xs">
-      <ResourceLink kind="Deployment" name={obj.spec.install.spec.deployments[0].name} namespace={operatorNamespaceFor(obj)} title={obj.spec.install.spec.deployments[0].name} />
-    </div>
-    {/* TODO(alecmerdler): Handle "Copied" status from `OperatorGroup` */}
-    <div className="col-lg-2 col-md-3 col-sm-4 hidden-xs">{obj.metadata.deletionTimestamp ? 'Disabling' : installStatus}</div>
-    <div className="col-lg-3 col-md-3 hidden-sm hidden-xs">
-      { _.take(providedAPIsFor(obj), 4).map((desc, i) => <div key={i}>
-        <Link to={`${route}/${referenceForProvidedAPI(desc)}`} title={desc.name}>{desc.displayName}</Link>
-      </div>)}
-      { providedAPIsFor(obj).length > 4 && <Link to={`${route}/instances`} title={`View ${providedAPIsFor(obj).length - 4} more...`}>{`View ${providedAPIsFor(obj).length - 4} more...`}</Link>}
-    </div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab resource={obj} kind={referenceFor(obj)} actions={menuActions} />
-    </div>
-  </div>;
-});
 
 export const ClusterServiceVersionTableRow = withFallback<ClusterServiceVersionTableRowProps>(({obj, index, key, style}) => {
   const route = `/k8s/ns/${obj.metadata.namespace}/${ClusterServiceVersionModel.plural}/${obj.metadata.name}`;
@@ -155,10 +114,7 @@ export const ClusterServiceVersionTableRow = withFallback<ClusterServiceVersionT
 export const ClusterServiceVersionList: React.SFC<ClusterServiceVersionListProps> = (props) => {
   const EmptyMsg = () => <MsgBox title="No Cluster Service Versions Found" detail="" />;
 
-  return <React.Fragment>
-    <Table {...props} aria-label="Installed Operators" Header={ClusterServiceVersionTableHeader} Row={ClusterServiceVersionTableRow} EmptyMsg={EmptyMsg} virtualize />
-    {false && <List {...props} Row={ClusterServiceVersionRow} Header={ClusterServiceVersionHeader} EmptyMsg={EmptyMsg} /> }
-  </React.Fragment>;
+  return <Table {...props} aria-label="Installed Operators" Header={ClusterServiceVersionTableHeader} Row={ClusterServiceVersionTableRow} EmptyMsg={EmptyMsg} virtualize />;
 };
 
 const stateToProps = ({k8s, FLAGS}) => ({
@@ -396,5 +352,3 @@ ClusterServiceVersionsPage.displayName = 'ClusterServiceVersionsPage';
 CRDCard.displayName = 'CRDCard';
 ClusterServiceVersionsDetailsPage.displayName = 'ClusterServiceVersionsDetailsPage';
 ClusterServiceVersionDetails.displayName = 'ClusterServiceVersionDetails';
-ClusterServiceVersionRow.displayName = 'ClusterServiceVersionRow';
-ClusterServiceVersionHeader.displayName = 'ClusterServiceVersionHeader';

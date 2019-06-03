@@ -4,7 +4,7 @@ export const wait = async(condition) => await browser.wait(condition, 15000);
 
 // List pages
 export const listPageHeading = $('.co-m-pane__heading');
-export const firstListLink = $$('.co-resource-list__item a.co-resource-item__resource-name').first();
+export const firstListLink = $$('.ReactVirtualized__VirtualGrid__innerScrollContainer tr a.co-resource-item__resource-name').first();
 export const createButton = $('.co-m-pane__filter-bar-group button');
 
 // Details pages
@@ -17,7 +17,7 @@ export const labels = $$('.co-m-label');
 export const expiredSilenceIcon = $('.co-m-pane__details .fa-ban');
 export const ruleLink = $('.co-m-pane__details .co-resource-item__resource-name');
 export const silenceComment = $$('.co-m-pane__details dd').get(-2);
-export const firstAlertsListLink = $$('.co-resource-list__item a.co-resource-item').first();
+export const firstAlertsListLink = $$('.ReactVirtualized__VirtualGrid__innerScrollContainer tr a.co-resource-item').first();
 
 // Silence form
 export const matcherNameInput = $('input[placeholder=Name]');

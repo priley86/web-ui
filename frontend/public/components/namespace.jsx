@@ -10,7 +10,7 @@ import * as fuzzy from 'fuzzysearch';
 import { NamespaceModel, ProjectModel, SecretModel } from '../models';
 import { k8sGet } from '../module/k8s';
 import * as UIActions from '../actions/ui';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { ActionsMenu, Kebab, Dropdown, Firehose, LabelList, LoadingInline, navFactory, ResourceKebab, SectionHeading, ResourceIcon, ResourceLink, ResourceSummary, humanizeBinaryBytes, MsgBox, StatusIconAndText, ExternalLink, humanizeCpuCores, humanizeDecimalBytes } from './utils';
 import { createNamespaceModal, createProjectModal, deleteNamespaceModal, configureNamespacePullSecretModal } from './modals';
 import { RoleBindingsPage } from './RBAC';
@@ -54,12 +54,6 @@ const namespacesColumnClasses = [
   Kebab.columnClass,
 ];
 
-const NamespaceHeader = props => <ListHeader>
-  <ColHead {...props} className="col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-4 col-xs-6" sortField="status.phase">Status</ColHead>
-  <ColHead {...props} className="col-sm-4 hidden-xs" sortField="metadata.labels">Labels</ColHead>
-</ListHeader>;
-
 export const NamespacesTableHeader = () => {
   return [
     {
@@ -81,21 +75,6 @@ export const NamespacesTableHeader = () => {
 };
 NamespacesTableHeader.displayName = 'NamespacesTableHeader';
 
-const NamespaceRow = ({obj: ns}) => <ResourceRow obj={ns}>
-  <div className="col-sm-4 col-xs-6">
-    <ResourceLink kind="Namespace" name={ns.metadata.name} title={ns.metadata.uid} />
-  </div>
-  <div className="col-sm-4 col-xs-6 co-break-word">
-    <StatusIconAndText status={ns.status.phase} />
-  </div>
-  <div className="col-sm-4 hidden-xs">
-    <LabelList kind="Namespace" labels={ns.metadata.labels} />
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={nsMenuActions} kind="Namespace" resource={ns} />
-  </div>
-</ResourceRow>;
-
 const NamespacesTableRow = ({obj: ns, index, key, style}) => {
   return (
     <Vr id={ns.metadata.uid} index={index} trKey={key} style={style}>
@@ -116,10 +95,8 @@ const NamespacesTableRow = ({obj: ns, index, key, style}) => {
 };
 NamespacesTableRow.displayName = 'NamespacesTableRow';
 
-export const NamespacesList = props => <React.Fragment>
-  <Table {...props} aria-label="Namespaces" Header={NamespacesTableHeader} Row={NamespacesTableRow} virtualize />
-  {false && <List {...props} Header={NamespaceHeader} Row={NamespaceRow} /> }
-</React.Fragment>;
+export const NamespacesList = props => <Table {...props} aria-label="Namespaces" Header={NamespacesTableHeader} Row={NamespacesTableRow} virtualize />;
+
 export const NamespacesPage = props => <ListPage {...props} ListComponent={NamespacesList} canCreate={true} createHandler={() => createNamespaceModal({blocking: true})} />;
 
 const projectMenuActions = [Kebab.factory.Edit, deleteModal];
@@ -131,13 +108,6 @@ const projectColumnClasses = [
   classNames('pf-m-3-col-on-lg', 'pf-m-hidden', 'pf-m-visible-on-lg'),
   Kebab.columnClass,
 ];
-
-const ProjectHeader = props => <ListHeader>
-  <ColHead {...props} className="col-md-3 col-sm-6 col-xs-8" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-3 col-xs-4" sortField="status.phase">Status</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-3 hidden-xs" sortField="metadata.annotations.['openshift.io/requester']">Requester</ColHead>
-  <ColHead {...props} className="col-md-3 hidden-sm hidden-xs" sortField="metadata.labels">Labels</ColHead>
-</ListHeader>;
 
 const ProjectTableHeader = () => {
   return [
@@ -164,31 +134,6 @@ const ProjectTableHeader = () => {
 };
 ProjectTableHeader.displayName = 'ProjectTableHeader';
 
-const ProjectRow = ({obj: project}) => {
-  const name = project.metadata.name;
-  const displayName = getDisplayName(project);
-  const requester = getRequester(project);
-  return <ResourceRow obj={project}>
-    <div className="col-md-3 col-sm-6 col-xs-8">
-      <span className="co-resource-item">
-        <ResourceIcon kind="Project" />
-        <Link to={`/overview/ns/${name}`} title={displayName} className="co-resource-item__resource-name">{project.metadata.name}</Link>
-      </span>
-    </div>
-    <div className="col-md-3 col-sm-3 col-xs-4">
-      <StatusIconAndText status={project.status.phase} />
-    </div>
-    <div className="col-md-3 col-sm-3 hidden-xs co-break-word">
-      {requester || <span className="text-muted">No requester</span>}
-    </div>
-    <div className="col-md-3 hidden-sm hidden-xs">
-      <LabelList kind="Project" labels={project.metadata.labels} />
-    </div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={projectMenuActions} kind="Project" resource={project} />
-    </div>
-  </ResourceRow>;
-};
 
 const ProjectTableRow = ({obj: project, index, key, style}) => {
   const name = project.metadata.name;
@@ -232,10 +177,7 @@ const ProjectList_ = props => {
     </p>
   </React.Fragment>;
   const ProjectEmptyMessage = () => <MsgBox title="Welcome to OpenShift" detail={ProjectEmptyMessageDetail} />;
-  return <React.Fragment>
-    <Table {...props} aria-label="Projects" Header={ProjectTableHeader} Row={ProjectTableRow} EmptyMsg={ProjectEmptyMessage} virtualize />
-    {false && <List {...props} Header={ProjectHeader} Row={ProjectRow} EmptyMsg={ProjectEmptyMessage} />}
-  </React.Fragment>;
+  return <Table {...props} aria-label="Projects" Header={ProjectTableHeader} Row={ProjectTableRow} EmptyMsg={ProjectEmptyMessage} virtualize />;
 };
 export const ProjectList = connect(createProjectMessageStateToProps)(ProjectList_);
 

@@ -2,7 +2,7 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { fromNow } from './utils/datetime';
 import { referenceFor, kindForReference } from '../module/k8s';
 import {
@@ -25,12 +25,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const Header = props => <ListHeader>
-  <ColHead {...props} className="col-xs-6 col-sm-4" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-xs-6 col-sm-4" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-sm-4 hidden-xs" sortField="metadata.creationTimestamp">Created</ColHead>
-</ListHeader>;
-
 export const TableHeader = () => {
   return [
     {
@@ -52,27 +46,7 @@ export const TableHeader = () => {
 };
 TableHeader.displayName = 'TableHeader';
 
-const RowForKind = kind => function RowForKind_({obj}) {
-  return <div className="row co-resource-list__item">
-    <div className="col-xs-6 col-sm-4">
-      <ResourceLink kind={kind} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-    </div>
-    <div className="col-xs-6 col-sm-4 co-break-word">
-      { obj.metadata.namespace
-        ? <ResourceLink kind="Namespace" name={obj.metadata.namespace} title={obj.metadata.namespace} />
-        : 'None'
-      }
-    </div>
-    <div className="col-xs-6 col-sm-4 hidden-xs">
-      { fromNow(obj.metadata.creationTimestamp) }
-    </div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={menuActions} kind={referenceFor(obj) || kind} resource={obj} />
-    </div>
-  </div>;
-};
-
-const TableRowForKind = ({obj, index, key, style, customData}) => {
+export const TableRowForKind = ({obj, index, key, style, customData}) => {
   return (
     <Vr id={obj.metadata.uid} index={index} trKey={key} style={style}>
       <Vd className={tableColumnClasses[0]}>
@@ -106,19 +80,14 @@ const DetailsForKind = kind => function DetailsForKind_({obj}) {
 
 export const DefaultList = props => {
   const { kinds } = props;
-  const Row = RowForKind(kinds[0]);
-  Row.displayName = 'RowForKind';
 
-  return <React.Fragment>
-    <Table {...props}
-      aria-label="Default Resource"
-      kinds={[kinds[0]]}
-      customData={{kind: kinds[0]}}
-      Header={TableHeader}
-      Row={TableRowForKind}
-      virtualize />
-    {false && <List {...props} Header={Header} Row={Row} /> }
-  </React.Fragment>;
+  return <Table {...props}
+    aria-label="Default Resource"
+    kinds={[kinds[0]]}
+    customData={{kind: kinds[0]}}
+    Header={TableHeader}
+    Row={TableRowForKind}
+    virtualize />;
 };
 DefaultList.displayName = DefaultList;
 

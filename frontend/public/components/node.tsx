@@ -4,7 +4,7 @@ import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 import { getNodeRoles, nodeStatus, makeNodeSchedulable, K8sResourceKind, referenceForModel } from '../module/k8s';
 import { ResourceEventStream } from './events';
-import { Table, Vr, Vd, ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow } from './factory';
+import { Table, Vr, Vd, DetailsPage, ListPage } from './factory';
 import { configureUnschedulableModal } from './modals';
 import { PodsPage } from './pod';
 import { Kebab, navFactory, LabelList, ResourceKebab, SectionHeading, ResourceLink, Timestamp, units, cloudProviderNames, cloudProviderID, pluralize, StatusIconAndText, humanizeDecimalBytes, humanizeCpuCores } from './utils';
@@ -70,18 +70,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const Header = props => {
-  if (!props.data) {
-    return null;
-  }
-  return <ListHeader>
-    <ColHead {...props} className="col-md-5 col-sm-5 col-xs-8" sortField="metadata.name">Name</ColHead>
-    <ColHead {...props} className="col-md-2 col-sm-3 col-xs-4" sortFunc="nodeReadiness">Status</ColHead>
-    <ColHead {...props} className="col-md-2 col-sm-4 hidden-xs" sortFunc="nodeRoles">Role</ColHead>
-    <ColHead {...props} className="col-md-3 hidden-sm hidden-xs" sortField="metadata.annotations['machine.openshift.io/machine']">Machine</ColHead>
-  </ListHeader>;
-};
-
 export const NodeTableHeader = () => {
   return [
     {
@@ -109,37 +97,6 @@ export const NodeTableHeader = () => {
 NodeTableHeader.displayName = 'NodeTableHeader';
 
 const NodeStatus = ({node}) => <StatusIconAndText status={nodeStatus(node)} />;
-
-const NodeRow = ({obj: node, expand}) => {
-  const machine = getMachine(node);
-  const roles = getNodeRoles(node).sort();
-
-  return <ResourceRow obj={node}>
-    <div className="col-md-5 col-sm-5 col-xs-8">
-      <ResourceLink kind="Node" name={node.metadata.name} title={node.metadata.uid} />
-    </div>
-    <div className="col-md-2 col-sm-3 col-xs-4">
-      <NodeStatus node={node} />
-    </div>
-    <div className="col-md-2 col-sm-4 hidden-xs">
-      {roles.length ? roles.join(', ') : '-'}
-    </div>
-    <div className="col-md-3 hidden-sm hidden-xs">
-      {machine && <ResourceLink kind={referenceForModel(MachineModel)} name={machine.name} namespace={machine.namespace} />}
-    </div>
-    {expand && <div className="co-resource-list__item--expanded">
-      <div className="col-xs-5">
-        <NodeIPList ips={node.status.addresses} expand={expand} />
-      </div>
-      <div className="col-xs-7">
-        <LabelList kind="Node" labels={node.metadata.labels} />
-      </div>
-    </div>}
-    <div className="dropdown-kebab-pf">
-      <NodeKebab node={node} />
-    </div>
-  </ResourceRow>;
-};
 
 export const NodeTableRow: React.FC<NodeTableRowProps> = ({obj: node, index, key, style}) => {
   const machine = getMachine(node);
@@ -172,10 +129,7 @@ export type NodeTableRowProps = {
   style: object;
 };
 
-const NodesList = props => <React.Fragment>
-  <Table {...props} aria-label="Nodes" Header={NodeTableHeader} Row={NodeTableRow} virtualize />
-  {false && <List {...props} Header={Header} Row={NodeRow} /> }
-</React.Fragment>;
+const NodesList = props => <Table {...props} aria-label="Nodes" Header={NodeTableHeader} Row={NodeTableRow} virtualize />;
 
 const filters = [{
   type: 'node-status',

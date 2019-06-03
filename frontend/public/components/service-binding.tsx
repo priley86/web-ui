@@ -4,7 +4,7 @@ import { match } from 'react-router-dom';
 import { sortable } from '@patternfly/react-table';
 import * as classNames from 'classnames';
 import { serviceCatalogStatus, referenceForModel, K8sResourceKind } from '../module/k8s';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, SectionHeading, navFactory, ResourceKebab, ResourceLink, ResourceSummary, StatusWithIcon } from './utils';
 import { ResourceEventStream } from './events';
 import { Conditions } from './conditions';
@@ -80,14 +80,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const ServiceBindingsHeader = props => <ListHeader>
-  <ColHead {...props} className="col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-2 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-md-2 col-sm-4 hidden-xs" sortField="spec.instanceRef.name">Service Instance</ColHead>
-  <ColHead {...props} className="col-md-3 hidden-sm hidden-xs" sortField="spec.secretName">Secret</ColHead>
-  <ColHead {...props} className="col-md-2 hidden-sm hidden-xs" sortFunc="serviceCatalogStatus">Status</ColHead>
-</ListHeader>;
-
 export const ServiceBindingsTableHeader = () => {
   return [
     {
@@ -117,27 +109,6 @@ export const ServiceBindingsTableHeader = () => {
   ];
 };
 ServiceBindingsTableHeader.displayName = 'ServiceBindingsTableHeader';
-
-const ServiceBindingsRow: React.SFC<ServiceBindingsRowProps> = ({obj}) => <div className="row co-resource-list__item">
-  <div className="col-md-3 col-sm-4 col-xs-6">
-    <ResourceLink kind={referenceForModel(ServiceBindingModel)} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-  </div>
-  <div className="col-md-2 col-sm-4 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={obj.metadata.namespace} title={obj.metadata.namespace} />
-  </div>
-  <div className="col-md-2 col-sm-4 hidden-xs co-break-word">
-    <ResourceLink kind={referenceForModel(ServiceInstanceModel)} name={obj.spec.instanceRef.name} title={obj.spec.instanceRef.name} namespace={obj.metadata.namespace} />
-  </div>
-  <div className="col-md-3 hidden-sm hidden-xs co-break-word">
-    { secretLink(obj) }
-  </div>
-  <div className="col-md-2 hidden-sm hidden-xs co-break-word">
-    <StatusWithIcon obj={obj} />
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={referenceForModel(ServiceBindingModel)} resource={obj} />
-  </div>
-</div>;
 
 export const ServiceBindingsTableRow: React.FC<ServiceBindingsTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -172,10 +143,7 @@ export type ServiceBindingsTableRowProps = {
 };
 
 
-const ServiceBindingsList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Service Bindings" Header={ServiceBindingsTableHeader} Row={ServiceBindingsTableRow} virtualize />
-  {false && <List {...props} Header={ServiceBindingsHeader} Row={ServiceBindingsRow} /> }
-</React.Fragment>;
+const ServiceBindingsList: React.SFC = props => <Table {...props} aria-label="Service Bindings" Header={ServiceBindingsTableHeader} Row={ServiceBindingsTableRow} virtualize />;
 ServiceBindingsList.displayName = 'ServiceBindingsList';
 
 export const ServiceBindingsPage: React.SFC<ServiceBindingsPageProps> = props =>

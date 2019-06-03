@@ -5,10 +5,7 @@ import { sortable } from '@patternfly/react-table';
 import { ClusterOperatorModel } from '../../models';
 import { StartGuide } from '../start-guide';
 import {
-  ColHead,
   DetailsPage,
-  List,
-  ListHeader,
   ListPage,
   Table,
   Vr,
@@ -59,13 +56,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const ClusterOperatorHeader = props => <ListHeader>
-  <ColHead {...props} className="col-md-3 col-sm-3 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-2 col-sm-3 col-xs-6" sortFunc="getClusterOperatorStatus">Status</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-3 hidden-xs" sortFunc="getClusterOperatorVersion">Version</ColHead>
-  <ColHead {...props} className="col-md-4 col-sm-3 hidden-xs">Message</ColHead>
-</ListHeader>;
-
 export const ClusterOperatorTableHeader = () => {
   return [
     {
@@ -86,25 +76,6 @@ export const ClusterOperatorTableHeader = () => {
   ];
 };
 ClusterOperatorTableHeader.displayName = 'ClusterOperatorTableHeader';
-
-const ClusterOperatorRow: React.SFC<ClusterOperatorRowProps> = ({obj}) => {
-  const { status, message } = getStatusAndMessage(obj);
-  const operatorVersion = getClusterOperatorVersion(obj);
-  return <div className="row co-resource-list__item">
-    <div className="col-md-3 col-sm-3 col-xs-6">
-      <ResourceLink kind={clusterOperatorReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-    </div>
-    <div className="col-md-2 col-sm-3 col-xs-6">
-      <OperatorStatusIconAndLabel status={status} />
-    </div>
-    <div className="col-md-3 col-sm-3 hidden-xs">
-      {operatorVersion || '-'}
-    </div>
-    <div className="col-md-4 col-sm-3 hidden-xs co-break-word co-pre-line">
-      {message ? _.truncate(message, { length: 256, separator: ' ' }) : '-'}
-    </div>
-  </div>;
-};
 
 export const ClusterOperatorTableRow: React.FC<ClusterOperatorTableRowProps> = ({obj, index, key, style}) => {
   const { status, message } = getStatusAndMessage(obj);
@@ -134,10 +105,7 @@ export type ClusterOperatorTableRowProps = {
   style: object;
 };
 
-export const ClusterOperatorList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Cluster Operators" Header={ClusterOperatorTableHeader} Row={ClusterOperatorTableRow} virtualize />
-  {false && <List {...props} Header={ClusterOperatorHeader} Row={ClusterOperatorRow} /> }
-</React.Fragment>;
+export const ClusterOperatorList: React.SFC = props => <Table {...props} aria-label="Cluster Operators" Header={ClusterOperatorTableHeader} Row={ClusterOperatorTableRow} virtualize />;
 
 const allStatuses = [
   OperatorStatus.Available,
@@ -252,10 +220,6 @@ export const ClusterOperatorDetailsPage: React.SFC<ClusterOperatorDetailsPagePro
 
 type OperatorStatusIconAndLabelProps = {
   status: OperatorStatus;
-};
-
-type ClusterOperatorRowProps = {
-  obj: ClusterOperator;
 };
 
 type ClusterOperatorPageProps = {

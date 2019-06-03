@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, SectionHeading, detailsPage, navFactory, ResourceLink, ResourceKebab, ResourceSummary, StatusWithIcon, Timestamp, ExternalLink } from './utils';
 import { K8sResourceKind, referenceForModel } from '../module/k8s';
 import { ClusterServiceBrokerModel } from '../models';
@@ -17,13 +17,6 @@ const tableColumnClasses = [
   classNames('pf-m-3-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
   Kebab.columnClass,
 ];
-
-const ClusterServiceBrokerHeader: React.SFC<ClusterServiceBrokerHeaderProps> = props => <ListHeader>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortFunc="serviceCatalogStatus">Status</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="spec.relistBehavior">Relist Behavior</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="status.lastCatalogRetrievalTime">Last Retrieved</ColHead>
-</ListHeader>;
 
 export const ClusterServiceBrokerTableHeader = () => {
   return [
@@ -49,24 +42,6 @@ export const ClusterServiceBrokerTableHeader = () => {
   ];
 };
 ClusterServiceBrokerTableHeader.displayName = 'ClusterServiceBrokerTableHeader';
-
-const ClusterServiceBrokerListRow: React.SFC<ClusterServiceBrokerRowProps> = ({obj: serviceBroker}) => <ResourceRow obj={serviceBroker}>
-  <div className="col-sm-3 col-xs-6">
-    <ResourceLink kind={referenceForModel(ClusterServiceBrokerModel)} name={serviceBroker.metadata.name} />
-  </div>
-  <div className="col-sm-3 col-xs-6 co-break-word">
-    <StatusWithIcon obj={serviceBroker} />
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    {serviceBroker.spec.relistBehavior}
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    <Timestamp timestamp={serviceBroker.status.lastCatalogRetrievalTime} />
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={referenceForModel(ClusterServiceBrokerModel)} resource={serviceBroker} />
-  </div>
-</ResourceRow>;
 
 const ClusterServiceBrokerTableRow: React.FC<ClusterServiceBrokerTableRowProps> = ({obj: serviceBroker, index, key, style}) => {
   return (
@@ -145,10 +120,7 @@ export const ClusterServiceBrokerDetailsPage: React.SFC<ClusterServiceBrokerDeta
     navFactory.clusterServiceClasses(ServiceClassTabPage),
   ]}
 />;
-export const ClusterServiceBrokerList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Cluster Service Brokers" Header={ClusterServiceBrokerTableHeader} Row={ClusterServiceBrokerTableRow} virtualize />
-  {false && <List {...props} Header={ClusterServiceBrokerHeader} Row={ClusterServiceBrokerListRow} /> }
-</React.Fragment>;
+export const ClusterServiceBrokerList: React.SFC = props => <Table {...props} aria-label="Cluster Service Brokers" Header={ClusterServiceBrokerTableHeader} Row={ClusterServiceBrokerTableRow} virtualize />;
 
 export const ClusterServiceBrokerPage: React.SFC<ClusterServiceBrokerPageProps> = props =>
   <ListPage
@@ -158,10 +130,6 @@ export const ClusterServiceBrokerPage: React.SFC<ClusterServiceBrokerPageProps> 
     canCreate={true}
     showTitle={false}
   />;
-
-export type ClusterServiceBrokerRowProps = {
-  obj: K8sResourceKind
-};
 
 export type ClusterServiceBrokerHeaderProps = {
   obj: K8sResourceKind

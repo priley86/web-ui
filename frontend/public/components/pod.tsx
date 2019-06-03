@@ -8,7 +8,7 @@ import { ContainerSpec, K8sResourceKindReference, PodKind } from '../module/k8s'
 import { getRestartPolicyLabel, podPhase, podPhaseFilterReducer, podReadiness } from '../module/k8s/pods';
 import { getContainerState, getContainerStatus } from '../module/k8s/container';
 import { ResourceEventStream } from './events';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import {
   AsyncComponent,
   Kebab,
@@ -63,31 +63,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-export const PodRow: React.FC<PodRowProps> = ({obj: pod}) => {
-  const phase = podPhase(pod);
-
-  return <ResourceRow obj={pod}>
-    <div className="col-lg-2 col-md-3 col-sm-4 col-xs-6">
-      <ResourceLink kind="Pod" name={pod.metadata.name} namespace={pod.metadata.namespace} title={pod.metadata.uid} />
-    </div>
-    <div className="col-lg-2 col-md-2 col-sm-4 col-xs-6 co-break-word">
-      <ResourceLink kind="Namespace" name={pod.metadata.namespace} title={pod.metadata.namespace} />
-    </div>
-    <div className="col-lg-2 col-md-3 col-sm-4 hidden-xs">
-      <LabelList kind="Pod" labels={pod.metadata.labels} />
-    </div>
-    <div className="col-lg-2 col-md-2 hidden-sm hidden-xs co-break-word">
-      <NodeLink name={pod.spec.nodeName} />
-    </div>
-    <div className="col-lg-2 col-md-2 hidden-sm hidden-xs"><StatusIconAndText status={phase} /></div>
-    <div className="col-lg-2 hidden-md hidden-sm hidden-xs"><Readiness pod={pod} /></div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={menuActions} kind="Pod" resource={pod} isDisabled={phase === 'Terminating'} />
-    </div>
-  </ResourceRow>;
-};
-PodRow.displayName = 'PodRow';
-
 const kind = 'Pod';
 
 export const PodTableRow: React.FC<PodTableRowProps> = ({obj: pod, index, key, style}) => {
@@ -125,15 +100,6 @@ export type PodTableRowProps = {
   key?: string;
   style: object;
 };
-
-const PodHeader = props => <ListHeader>
-  <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 hidden-xs" sortField="metadata.labels">Pod Labels</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortField="spec.nodeName">Node</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-2 hidden-sm hidden-xs" sortFunc="podPhase">Status</ColHead>
-  <ColHead {...props} className="col-lg-2 hidden-md hidden-sm hidden-xs" sortFunc="podReadiness">Readiness</ColHead>
-</ListHeader>;
 
 export const PodTableHeader = () => {
   return [
@@ -358,10 +324,7 @@ export const PodsDetailsPage: React.FC<PodDetailsPageProps> = props => <DetailsP
 />;
 PodsDetailsPage.displayName = 'PodsDetailsPage';
 
-export const PodList: React.FC = props => <React.Fragment>
-  <Table {...props} aria-label="Pods" Header={PodTableHeader} Row={PodTableRow} virtualize />
-  {false && <List {...props} Header={PodHeader} Row={PodRow} />}
-</React.Fragment>;
+export const PodList: React.FC = props => <Table {...props} aria-label="Pods" Header={PodTableHeader} Row={PodTableRow} virtualize />;
 PodList.displayName = 'PodList';
 
 const filters = [{
@@ -399,10 +362,6 @@ export class PodsPage extends React.Component<PodPageProps> {
 
 type ReadinessProps = {
   pod: PodKind;
-};
-
-type PodRowProps = {
-  obj: PodKind;
 };
 
 type ContainerLinkProps = {

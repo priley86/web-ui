@@ -3,10 +3,7 @@ import * as _ from 'lodash-es';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 import {
-  ColHead,
   DetailsPage,
-  List,
-  ListHeader,
   ListPage,
   Table,
   Vr,
@@ -34,12 +31,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const TemplateInstanceHeader = props => <ListHeader>
-  <ColHead {...props} className="col-sm-5 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-5 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-sm-2 hidden-xs" sortFunc="getTemplateInstanceStatus">Status</ColHead>
-</ListHeader>;
-
 export const TemplateInstanceTableHeader = () => {
   return [
     {
@@ -61,23 +52,6 @@ export const TemplateInstanceTableHeader = () => {
   ];
 };
 TemplateInstanceTableHeader.displayName = 'TemplateInstanceTableHeader';
-
-const TemplateInstanceRow: React.SFC<TemplateInstanceRowProps> = ({obj}) => (
-  <div className="row co-resource-list__item">
-    <div className="col-sm-5 col-xs-6 co-break-word">
-      <ResourceLink kind="TemplateInstance" name={obj.metadata.name} namespace={obj.metadata.namespace} />
-    </div>
-    <div className="col-sm-5 col-xs-6 co-break-word">
-      <ResourceLink kind="Namespace" name={obj.metadata.namespace} />
-    </div>
-    <div className="col-sm-2 hidden-xs">
-      <StatusIconAndText status={getTemplateInstanceStatus(obj)} />
-    </div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={menuActions} kind="TemplateInstance" resource={obj} />
-    </div>
-  </div>
-);
 
 export const TemplateInstanceTableRow: React.FC<TemplateInstanceTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -105,10 +79,7 @@ export type TemplateInstanceTableRowProps = {
   style: object;
 };
 
-export const TemplateInstanceList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Template Instances" Header={TemplateInstanceTableHeader} Row={TemplateInstanceTableRow} virtualize />
-  {false && <List {...props} Header={TemplateInstanceHeader} Row={TemplateInstanceRow} /> }
-</React.Fragment>;
+export const TemplateInstanceList: React.SFC = props => <Table {...props} aria-label="Template Instances" Header={TemplateInstanceTableHeader} Row={TemplateInstanceTableRow} virtualize />;
 
 const allStatuses = ['Ready', 'Not Ready', 'Failed'];
 
@@ -203,10 +174,6 @@ export const TemplateInstanceDetailsPage: React.SFC<TemplateInstanceDetailsPageP
     menuActions={menuActions}
     pages={[navFactory.details(TemplateInstanceDetails), navFactory.editYaml()]}
   />;
-
-type TemplateInstanceRowProps = {
-  obj: TemplateInstanceKind;
-};
 
 type TemplateInstancePageProps = {
   autoFocus?: boolean;

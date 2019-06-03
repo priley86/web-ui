@@ -7,7 +7,7 @@ import { Popover } from '@patternfly/react-core';
 import { QuestionCircleIcon } from '@patternfly/react-icons';
 
 import { K8sResourceKind, K8sResourceKindReference } from '../module/k8s';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { CopyToClipboard, ExternalLink, Kebab, SectionHeading, LabelList, navFactory, ResourceKebab, ResourceLink, ResourceSummary, history, Timestamp } from './utils';
 import { fromNow } from './utils/datetime';
 
@@ -205,13 +205,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const ImageStreamsHeader = props => <ListHeader>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-3 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="metadata.labels">Labels</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="metadata.creationTimestamp">Created</ColHead>
-</ListHeader>;
-
 export const ImageStreamsTableHeader = () => {
   return [
     {
@@ -236,24 +229,6 @@ export const ImageStreamsTableHeader = () => {
   ];
 };
 ImageStreamsTableHeader.displayName = 'ImageStreamsTableHeader';
-
-const ImageStreamsRow: React.SFC<ImageStreamsRowProps> = ({obj}) => <div className="row co-resource-list__item">
-  <div className="col-sm-3 col-xs-6">
-    <ResourceLink kind={ImageStreamsReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-  </div>
-  <div className="col-sm-3 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={obj.metadata.namespace} />
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    <LabelList kind={ImageStreamsReference} labels={obj.metadata.labels} />
-  </div>
-  <div className="col-sm-3 hidden-xs">
-    { fromNow(obj.metadata.creationTimestamp) }
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={ImageStreamsReference} resource={obj} />
-  </div>
-</div>;
 
 export const ImageStreamsTableRow: React.FC<ImageStreamsTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -284,10 +259,7 @@ export type ImageStreamsTableRowProps = {
   style: object;
 };
 
-export const ImageStreamsList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Image Streams" Header={ImageStreamsTableHeader} Row={ImageStreamsTableRow} virtualize />
-  {false && <List {...props} Header={ImageStreamsHeader} Row={ImageStreamsRow} /> }
-</React.Fragment>;
+export const ImageStreamsList: React.SFC = props => <Table {...props} aria-label="Image Streams" Header={ImageStreamsTableHeader} Row={ImageStreamsTableRow} virtualize />;
 ImageStreamsList.displayName = 'ImageStreamsList';
 
 export const buildPhase = build => build.status.phase;
@@ -311,10 +283,6 @@ type ImageStreamTagsRowProps = {
 export type ImageStreamManipulationHelpProps = {
   imageStream: K8sResourceKind;
   tag?: string
-};
-
-export type ImageStreamsRowProps = {
-  obj: K8sResourceKind;
 };
 
 export type ImageStreamsDetailsProps = {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import * as _ from 'lodash-es';
 import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { history, SectionHeading, detailsPage, navFactory, ResourceSummary, resourcePathFromModel, ResourceLink } from './utils';
 import { viewYamlComponent } from './utils/horizontal-nav';
 import { ClusterServiceClassModel, ClusterServiceBrokerModel } from '../models';
@@ -34,12 +34,6 @@ const tableColumnClasses = [
   classNames('pf-m-3-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
 ];
 
-const ClusterServiceClassHeader: React.SFC<ClusterServiceClassHeaderProps> = props => <ListHeader>
-  <ColHead {...props} className="col-sm-6 col-xs-12" sortFunc="serviceClassDisplayName" currentSortFunc="serviceClassDisplayName">Display Name</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="spec.externalName">External Name</ColHead>
-  <ColHead {...props} className="col-sm-3 hidden-xs" sortField="spec.clusterServiceBrokerName">Broker</ColHead>
-</ListHeader>;
-
 export const ClusterServiceClassTableHeader = () => {
   return [
     {
@@ -57,22 +51,6 @@ export const ClusterServiceClassTableHeader = () => {
   ];
 };
 ClusterServiceClassTableHeader.displayName = 'ClusterServiceClassTableHeader';
-
-const ClusterServiceClassListRow: React.SFC<ClusterServiceClassRowProps> = ({obj: serviceClass}) => {
-  const path = resourcePathFromModel(ClusterServiceClassModel, serviceClass.metadata.name);
-  return <ResourceRow obj={serviceClass}>
-    <div className="col-sm-6 col-xs-12">
-      <ClusterServiceClassIcon serviceClass={serviceClass} />
-      <Link className="co-cluster-service-class-link" to={path}>{serviceClassDisplayName(serviceClass)}</Link>
-    </div>
-    <div className="col-sm-3 hidden-xs">
-      {serviceClass.spec.externalName}
-    </div>
-    <div className="col-sm-3 hidden-xs co-break-word">
-      <ResourceLink kind={referenceForModel(ClusterServiceBrokerModel)} name={serviceClass.spec.clusterServiceBrokerName} />
-    </div>
-  </ResourceRow>;
-};
 
 const ClusterServiceClassTableRow: React.FC<ClusterServiceClassTableRowProps> = ({obj: serviceClass, index, key, style}) => {
   const path = resourcePathFromModel(ClusterServiceClassModel, serviceClass.metadata.name);
@@ -130,10 +108,7 @@ export const ClusterServiceClassDetailsPage: React.SFC<ClusterServiceClassDetail
       fieldSelector={`spec.clusterServiceClassRef.name=${obj.metadata.name}`} />)]}
 />;
 
-export const ClusterServiceClassList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Cluster Service Classes" Header={ClusterServiceClassTableHeader} Row={ClusterServiceClassTableRow} defaultSortFunc="serviceClassDisplayName" virtualize />
-  {false && <List {...props} Header={ClusterServiceClassHeader} Row={ClusterServiceClassListRow} defaultSortFunc="serviceClassDisplayName" /> }
-</React.Fragment>;
+export const ClusterServiceClassList: React.SFC = props => <Table {...props} aria-label="Cluster Service Classes" Header={ClusterServiceClassTableHeader} Row={ClusterServiceClassTableRow} defaultSortFunc="serviceClassDisplayName" virtualize />;
 
 export const ClusterServiceClassPage: React.SFC<ClusterServiceClassPageProps> = props =>
   <ListPage
@@ -144,10 +119,6 @@ export const ClusterServiceClassPage: React.SFC<ClusterServiceClassPageProps> = 
     textFilter="service-class"
     canCreate={false}
   />;
-
-export type ClusterServiceClassRowProps = {
-  obj: K8sResourceKind
-};
 
 export type ClusterServiceClassHeaderProps = {
   obj: K8sResourceKind

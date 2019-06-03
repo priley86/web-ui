@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as _ from 'lodash-es';
 import { sortable } from '@patternfly/react-table';
 import * as classNames from 'classnames';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, detailsPage, navFactory, ResourceKebab, SectionHeading, ResourceLink, ResourceSummary } from './utils';
 import { StorageClassResourceKind, K8sResourceKind, K8sResourceKindReference } from '../module/k8s';
 
@@ -24,12 +24,6 @@ const tableColumnClasses = [
   classNames('pf-m-2-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
   Kebab.columnClass,
 ];
-
-const StorageClassHeader = props => <ListHeader>
-  <ColHead {...props} className="col-sm-5 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-sm-5 col-xs-6" sortField="provisioner">Provisioner</ColHead>
-  <ColHead {...props} className="col-sm-2 hidden-xs" sortField="reclaimPolicy">Reclaim <span className="hidden-sm">Policy</span></ColHead>
-</ListHeader>;
 
 export const StorageClassTableHeader = () => {
   return [
@@ -53,24 +47,6 @@ export const StorageClassTableHeader = () => {
   ];
 };
 StorageClassTableHeader.displayName = 'StorageClassTableHeader';
-
-const StorageClassRow: React.SFC<StorageClassRowProps> = ({obj}) => {
-  return <div className="row co-resource-list__item">
-    <div className="col-sm-5 col-xs-6 co-break-word">
-      <ResourceLink inline kind={StorageClassReference} name={obj.metadata.name} />
-      { isDefaultClass(obj) && <span className="small text-muted storage-class-default">&ndash; Default</span> }
-    </div>
-    <div className="col-sm-5 col-xs-6 co-break-word">
-      {obj.provisioner}
-    </div>
-    <div className="col-sm-2 hidden-xs">
-      {obj.reclaimPolicy || '-'}
-    </div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={menuActions} kind={StorageClassReference} resource={obj} />
-    </div>
-  </div>;
-};
 
 export const StorageClassTableRow: React.SFC<StorageClassTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -119,10 +95,7 @@ const StorageClassDetails: React.SFC<StorageClassDetailsProps> = ({obj}) => <Rea
   </div>
 </React.Fragment>;
 
-export const StorageClassList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Storage Classes" Header={StorageClassTableHeader} Row={StorageClassTableRow} virtualize />
-  {false && <List {...props} Header={StorageClassHeader} Row={StorageClassRow} /> }
-</React.Fragment>;
+export const StorageClassList: React.SFC = props => <Table {...props} aria-label="Storage Classes" Header={StorageClassTableHeader} Row={StorageClassTableRow} virtualize />;
 StorageClassList.displayName = 'StorageClassList';
 
 export const StorageClassPage: React.SFC<StorageClassPageProps> = props => {
@@ -147,10 +120,6 @@ export const StorageClassDetailsPage: React.SFC<StorageClassDetailsPageProps> = 
   return <DetailsPage {...props} kind={StorageClassReference} menuActions={menuActions} pages={pages} />;
 };
 StorageClassDetailsPage.displayName = 'StorageClassDetailsPage';
-
-export type StorageClassRowProps = {
-  obj: any,
-};
 
 export type StorageClassDetailsProps = {
   obj: any,

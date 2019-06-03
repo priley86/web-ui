@@ -10,9 +10,6 @@ import { VolumesTable } from './volumes-table';
 import {
   DetailsPage,
   ListPage,
-  List,
-  WorkloadListHeader,
-  WorkloadListRow,
   Table,
 } from './factory';
 import {
@@ -147,13 +144,6 @@ export const DeploymentsDetailsPage: React.FC<DeploymentsDetailsPageProps> = pro
 />;
 DeploymentsDetailsPage.displayName = 'DeploymentsDetailsPage';
 
-const DeploymentsRow: React.FC<DeploymentsRowProps> = props => <WorkloadListRow {...props} kind={deploymentsReference} actions={menuActions} />;
-DeploymentsRow.displayName = 'DeploymentsRow';
-
-type DeploymentsRowProps = {
-  obj: K8sResourceKind;
-};
-
 type DeploymentDetailsListProps = {
   deployment: K8sResourceKind;
 };
@@ -161,7 +151,6 @@ type DeploymentDetailsListProps = {
 type DeploymentDetailsProps = {
   obj: K8sResourceKind;
 };
-const Row = props => <WorkloadListRow {...props} kind="Deployment" actions={menuActions} />;
 
 const kind = 'Deployment';
 
@@ -183,10 +172,7 @@ const DeploymentTableHeader = () => {
 };
 DeploymentTableHeader.displayName = 'DeploymentTableHeader';
 
-export const DeploymentsList: React.FC = props => <React.Fragment>
-  <Table {...props} aria-label="Deployments" Header={DeploymentTableHeader} Row={DeploymentTableRow} virtualize />
-  {false && <List {...props} Header={WorkloadListHeader} Row={Row} />}
-</React.Fragment>;
+export const DeploymentsList: React.FC = props => <Table {...props} aria-label="Deployments" Header={DeploymentTableHeader} Row={DeploymentTableRow} virtualize />;
 DeploymentsList.displayName = 'DeploymentsList';
 
 export const DeploymentsPage: React.FC<DeploymentsPageProps> = props => <ListPage kind={deploymentsReference} canCreate={true} ListComponent={DeploymentsList} {...props} />;

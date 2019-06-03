@@ -4,7 +4,7 @@ import * as classNames from 'classnames';
 import { sortable } from '@patternfly/react-table';
 import { K8sResourceKind, K8sResourceKindReference } from '../module/k8s';
 import { Conditions } from './conditions';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, Table, Vr, Vd } from './factory';
+import { DetailsPage, ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, SectionHeading, LabelList, navFactory, ResourceKebab, ResourceLink, ResourceSummary, Timestamp } from './utils';
 import { ResourceEventStream } from './events';
 
@@ -183,15 +183,6 @@ const tableColumnClasses = [
 
 const kind = 'HorizontalPodAutoscaler';
 
-const HorizontalPodAutoscalersHeader = props => <ListHeader>
-  <ColHead {...props} className="col-lg-3 col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6 " sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-lg-3 col-md-3 col-sm-4 hidden-xs" sortField="metadata.labels">Labels</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-3 hidden-sm hidden-xs" sortField="spec.scaleTargetRef.name">Scale Target</ColHead>
-  <ColHead {...props} className="col-lg-1 hidden-md hidden-sm hidden-xs" sortField="spec.minReplicas">Min Pods</ColHead>
-  <ColHead {...props} className="col-lg-1 hidden-md hidden-sm hidden-xs" sortField="spec.maxReplicas">Max Pods</ColHead>
-</ListHeader>;
-
 export const HorizontalPodAutoscalersTableHeader = () => {
   return [
     {
@@ -218,36 +209,10 @@ export const HorizontalPodAutoscalersTableHeader = () => {
       title: 'Max Pods', sortField: 'spec.maxReplicas', transforms: [sortable],
       props: { className: tableColumnClasses[5]},
     },
-    { title: '',
-      props: { className: tableColumnClasses[6]},
-    },
+    { title: '', props: { className: tableColumnClasses[6]}},
   ];
 };
 HorizontalPodAutoscalersTableHeader.displayName = 'HorizontalPodAutoscalersTableHeader';
-
-const HorizontalPodAutoscalersRow: React.SFC<HorizontalPodAutoscalersRowProps> = ({obj}) => <div className="row co-resource-list__item">
-  <div className="col-lg-3 col-md-3 col-sm-4 col-xs-6">
-    <ResourceLink kind={HorizontalPodAutoscalersReference} name={obj.metadata.name} namespace={obj.metadata.namespace} title={obj.metadata.name} />
-  </div>
-  <div className="col-lg-2 col-md-3 col-sm-4 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={obj.metadata.namespace} title={obj.metadata.namespace} />
-  </div>
-  <div className="col-lg-3 col-md-3 col-sm-4 hidden-xs">
-    <LabelList kind="HorizontalPodAutoscaler" labels={obj.metadata.labels} />
-  </div>
-  <div className="col-lg-2 col-md-3 hidden-sm hidden-xs co-break-word">
-    <ResourceLink kind={obj.spec.scaleTargetRef.kind} name={obj.spec.scaleTargetRef.name} namespace={obj.metadata.namespace} title={obj.spec.scaleTargetRef.name} />
-  </div>
-  <div className="col-lg-1 hidden-md hidden-sm hidden-xs">
-    {obj.spec.minReplicas}
-  </div>
-  <div className="col-lg-1 hidden-md hidden-sm hidden-xs">
-    {obj.spec.maxReplicas}
-  </div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind={HorizontalPodAutoscalersReference} resource={obj} />
-  </div>
-</div>;
 
 const HorizontalPodAutoscalersTableRow: React.FC<HorizontalPodAutoscalersTableRowProps> = ({obj, index, key, style}) => {
   return (
@@ -284,10 +249,7 @@ export type HorizontalPodAutoscalersTableRowProps = {
   style: object;
 };
 
-const HorizontalPodAutoscalersList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Horizontal Pod Auto Scalers" Header={HorizontalPodAutoscalersTableHeader} Row={HorizontalPodAutoscalersTableRow} virtualize />
-  {false && <List {...props} Header={HorizontalPodAutoscalersHeader} Row={HorizontalPodAutoscalersRow} /> }
-</React.Fragment>;
+const HorizontalPodAutoscalersList: React.SFC = props => <Table {...props} aria-label="Horizontal Pod Auto Scalers" Header={HorizontalPodAutoscalersTableHeader} Row={HorizontalPodAutoscalersTableRow} virtualize />;
 HorizontalPodAutoscalersList.displayName = 'HorizontalPodAutoscalersList';
 
 export const HorizontalPodAutoscalersPage: React.SFC<HorizontalPodAutoscalersPageProps> = props =>

@@ -4,7 +4,7 @@ import * as classNames from 'classnames';
 import { Popover } from '@patternfly/react-core';
 import { sortable } from '@patternfly/react-table';
 import { QuestionCircleIcon } from '@patternfly/react-icons';
-import { ColHead, DetailsPage, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { DetailsPage,ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, CopyToClipboard, SectionHeading, ResourceKebab, detailsPage, navFactory, ResourceLink, ResourceSummary, StatusIconAndText, ExternalLink } from './utils';
 import { MaskedData } from './configmap-and-secret-data';
 import { K8sResourceKind, K8sResourceKindReference } from '../module/k8s';
@@ -119,14 +119,6 @@ const tableColumnClasses = [
 
 const kind = 'Route';
 
-const RouteListHeader: React.SFC<RouteHeaderProps> = props => <ListHeader>
-  <ColHead {...props} className="col-lg-3 col-md-3 col-sm-4 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-3 col-sm-4 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-lg-3 col-md-3 col-sm-4 hidden-xs" sortField="spec.host">Location</ColHead>
-  <ColHead {...props} className="col-lg-2 col-md-3 hidden-sm hidden-xs" sortField="spec.to.name">Service</ColHead>
-  <ColHead {...props} className="col-lg-2 hidden-md hidden-sm hidden-xs">Status</ColHead>
-</ListHeader>;
-
 export const RouteTableHeader = () => {
   return [
     {
@@ -155,26 +147,6 @@ export const RouteTableHeader = () => {
   ];
 };
 RouteTableHeader.displayName = 'RouteTableHeader';
-
-const RouteListRow: React.SFC<RoutesRowProps> = ({obj: route}) => <ResourceRow obj={route}>
-  <div className="col-lg-3 col-md-3 col-sm-4 col-xs-6">
-    <ResourceLink kind="Route" name={route.metadata.name}
-      namespace={route.metadata.namespace} title={route.metadata.uid} />
-  </div>
-  <div className="col-lg-2 col-md-3 col-sm-4 col-xs-6 co-break-word">
-    <ResourceLink kind="Namespace" name={route.metadata.namespace} title={route.metadata.namespace} />
-  </div>
-  <div className="col-lg-3 col-md-3 col-sm-4 hidden-xs co-break-word">
-    <RouteLocation obj={route} />
-  </div>
-  <div className="col-lg-2 col-md-3 hidden-sm hidden-xs">
-    <ResourceLink kind="Service" name={route.spec.to.name} namespace={route.metadata.namespace} title={route.spec.to.name} />
-  </div>
-  <div className="col-lg-2 hidden-md hidden-sm hidden-xs"><RouteStatus obj={route} /></div>
-  <div className="dropdown-kebab-pf">
-    <ResourceKebab actions={menuActions} kind="Route" resource={route} />
-  </div>
-</ResourceRow>;
 
 const RouteTableRow: React.FC<RouteTableRowProps> = ({obj: route, index, key, style}) => {
   return (
@@ -412,10 +384,7 @@ export const RoutesDetailsPage: React.SFC<RoutesDetailsPageProps> = props => <De
   menuActions={menuActions}
   pages={[navFactory.details(detailsPage(RouteDetails)), navFactory.editYaml()]}
 />;
-export const RoutesList: React.SFC = props => <React.Fragment>
-  <Table {...props} aria-label="Routes" Header={RouteTableHeader} Row={RouteTableRow} virtualize />
-  {false && <List {...props} Header={RouteListHeader} Row={RouteListRow} />}
-</React.Fragment>;
+export const RoutesList: React.SFC = props => <Table {...props} aria-label="Routes" Header={RouteTableHeader} Row={RouteTableRow} virtualize />;
 
 const filters = [{
   type: 'route-status',

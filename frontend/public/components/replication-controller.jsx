@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as _ from 'lodash-es';
 
 import { ResourceEventStream } from './events';
-import { DetailsPage, List, ListPage, WorkloadListHeader, WorkloadListRow, Table } from './factory';
+import { DetailsPage, ListPage, Table } from './factory';
 import { replicaSetMenuActions } from './replicaset';
 import {
   ContainerTable,
@@ -72,8 +72,6 @@ export const ReplicationControllersDetailsPage = props => <DetailsPage
   pages={[details(Details), editYaml(), pods(), envEditor(environmentComponent), events(ResourceEventStream)]}
 />;
 
-const Row = props => <WorkloadListRow {...props} kind="ReplicationController" actions={replicaSetMenuActions} />;
-
 const kind = 'ReplicationController';
 
 const ReplicationControllerTableRow = ({obj, index, key, style}) => {
@@ -89,9 +87,6 @@ const ReplicationControllerTableHeader = () => {
 };
 ReplicationControllerTableHeader.displayName = 'ReplicationControllerTableHeader';
 
-export const ReplicationControllersList = props => <React.Fragment>
-  <Table {...props} aria-label="Replication Controllers" Header={ReplicationControllerTableHeader} Row={ReplicationControllerTableRow} virtualize />
-  {false && <List {...props} Header={WorkloadListHeader} Row={Row} /> }
-</React.Fragment>;
+export const ReplicationControllersList = props => <Table {...props} aria-label="Replication Controllers" Header={ReplicationControllerTableHeader} Row={ReplicationControllerTableRow} virtualize />;
 
 export const ReplicationControllersPage = props => <ListPage canCreate={true} ListComponent={ReplicationControllersList} {...props} />;

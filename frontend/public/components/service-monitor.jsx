@@ -2,7 +2,7 @@ import * as _ from 'lodash-es';
 import * as React from 'react';
 import { sortable } from '@patternfly/react-table';
 import * as classNames from 'classnames';
-import { ColHead, List, ListHeader, ListPage, ResourceRow, Table, Vr, Vd } from './factory';
+import { ListPage, Table, Vr, Vd } from './factory';
 import { Kebab, ResourceKebab, ResourceLink, Selector } from './utils';
 import { ServiceMonitorModel } from '../models';
 import { referenceForModel } from '../module/k8s';
@@ -34,30 +34,6 @@ const tableColumnClasses = [
   Kebab.columnClass,
 ];
 
-const ServiceMonitorRow = ({obj: sm}) => {
-  const {metadata} = sm;
-
-  return <ResourceRow obj={sm}>
-    <div className="col-md-3 col-sm-3 col-xs-6">
-      <ResourceLink kind={referenceForModel(ServiceMonitorModel)} name={metadata.name} namespace={metadata.namespace} title={metadata.uid} />
-    </div>
-    <div className="col-md-3 col-sm-3 col-xs-6">
-      <ResourceLink kind="Namespace" name={metadata.namespace} title={metadata.namespace} />
-    </div>
-    <div className="col-md-3 col-sm-6 hidden-xs">
-      { serviceSelectorLinks(sm) }
-    </div>
-    <div className="col-md-3 hidden-sm hidden-xs">
-      <p>
-        { namespaceSelectorLinks(sm) }
-      </p>
-    </div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={menuActions} kind={referenceForModel(ServiceMonitorModel)} resource={sm} />
-    </div>
-  </ResourceRow>;
-};
-
 export const ServiceMonitorTableRow = ({obj: sm, index, key, style}) => {
   const {metadata} = sm;
   return (
@@ -83,15 +59,6 @@ export const ServiceMonitorTableRow = ({obj: sm, index, key, style}) => {
   );
 };
 ServiceMonitorTableRow.displayName = 'ServiceMonitorTableRow';
-
-const ServiceMonitorHeader = props => <ListHeader>
-  <ColHead {...props} className="col-md-3 col-sm-3 col-xs-6" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-3 col-xs-6" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="col-md-3 col-sm-6 hidden-xs" sortField="spec.selector">Service Selector</ColHead>
-  <ColHead {...props} className="col-md-3 hidden-sm hidden-xs" sortField="spec.namespaceSelector">
-    Monitoring Namespace
-  </ColHead>
-</ListHeader>;
 
 export const ServiceMonitorTableHeader = () => {
   return [
@@ -119,10 +86,7 @@ export const ServiceMonitorTableHeader = () => {
 };
 ServiceMonitorTableHeader.displayName = 'ServiceMonitorTableHeader';
 
-export const ServiceMonitorsList = props => <React.Fragment>
-  <Table {...props} aria-label="Service Monitors" Header={ServiceMonitorTableHeader} Row={ServiceMonitorTableRow} virtualize />
-  {false && <List {...props} Header={ServiceMonitorHeader} Row={ServiceMonitorRow} /> }
-</React.Fragment>;
+export const ServiceMonitorsList = props => <Table {...props} aria-label="Service Monitors" Header={ServiceMonitorTableHeader} Row={ServiceMonitorTableRow} virtualize />;
 
 export const ServiceMonitorsPage = props => <ListPage
   {...props}

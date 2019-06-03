@@ -4,7 +4,7 @@ import { match, Link } from 'react-router-dom';
 import { Map as ImmutableMap } from 'immutable';
 import { sortable } from '@patternfly/react-table';
 import * as classNames from 'classnames';
-import { MultiListPage, List, ListHeader, ColHead, ResourceRow, DetailsPage, Table, Vr, Vd } from '../factory';
+import { MultiListPage, DetailsPage, Table, Vr, Vd } from '../factory';
 import { SectionHeading, MsgBox, ResourceLink, ResourceKebab, Kebab, ResourceIcon, navFactory, ResourceSummary, history } from '../utils';
 import { InstallPlanKind, InstallPlanApproval, olmNamespace, Step, referenceForStepResource } from './index';
 import { K8sResourceKind, referenceForModel, referenceForOwnerRef, k8sUpdate, apiVersionForReference } from '../../module/k8s';
@@ -21,14 +21,6 @@ const tableColumnClasses = [
   classNames('pf-m-2-col-on-xl', 'pf-m-hidden', 'pf-m-visible-on-xl'),
   Kebab.columnClass,
 ];
-
-export const InstallPlanHeader: React.SFC<InstallPlanHeaderProps> = (props) => <ListHeader>
-  <ColHead {...props} className="col-xs-6 col-sm-4 col-md-3" sortField="metadata.name">Name</ColHead>
-  <ColHead {...props} className="col-xs-6 col-sm-4 col-md-3" sortField="metadata.namespace">Namespace</ColHead>
-  <ColHead {...props} className="hidden-xs col-sm-4 col-md-3 col-lg-2">Components</ColHead>
-  <ColHead {...props} className="hidden-xs hidden-sm col-md-3 col-lg-2">Subscriptions</ColHead>
-  <ColHead {...props} className="hidden-xs hidden-sm hidden-md col-lg-2" sortField="status.phase">Status</ColHead>
-</ListHeader>;
 
 export const InstallPlanTableHeader = () => {
   return [
@@ -56,43 +48,6 @@ export const InstallPlanTableHeader = () => {
   ];
 };
 InstallPlanTableHeader.displayName = 'InstallPlanTableHeader';
-
-export const InstallPlanRow: React.SFC<InstallPlanRowProps> = (props) => {
-  const phaseFor = (phase: InstallPlanKind['status']['phase']) => phase === 'RequiresApproval'
-    ? <React.Fragment><i className="fa fa-exclamation-triangle text-warning" aria-hidden="true" /> {phase}</React.Fragment>
-    : phase;
-
-  return <ResourceRow obj={props.obj}>
-    <div className="col-xs-6 col-sm-4 col-md-3">
-      <ResourceLink kind={referenceForModel(InstallPlanModel)} namespace={props.obj.metadata.namespace} name={props.obj.metadata.name} title={props.obj.metadata.uid} />
-    </div>
-    <div className="col-xs-6 col-sm-4 col-md-3">
-      <ResourceLink kind="Namespace" name={props.obj.metadata.namespace} title={props.obj.metadata.namespace} displayName={props.obj.metadata.namespace} />
-    </div>
-    <div className="hidden-xs col-sm-4 col-md-3 col-lg-2">
-      <ul className="list-unstyled">
-        { props.obj.spec.clusterServiceVersionNames.map((csvName, i) => <li key={i}>
-          { _.get(props, 'obj.status.phase') === 'Complete'
-            ? <ResourceLink kind={referenceForModel(ClusterServiceVersionModel)} name={csvName} namespace={props.obj.metadata.namespace} title={csvName} />
-            : <React.Fragment><ResourceIcon kind={referenceForModel(ClusterServiceVersionModel)} />{csvName}</React.Fragment> }
-        </li>) }
-      </ul>
-    </div>
-    <div className="hidden-xs hidden-sm col-md-3 col-lg-2">
-      { (props.obj.metadata.ownerReferences || [])
-        .filter(ref => referenceForOwnerRef(ref) === referenceForModel(SubscriptionModel))
-        .map(ref => <ul key={ref.uid} className="list-unstyled">
-          <li><ResourceLink kind={referenceForModel(SubscriptionModel)} name={ref.name} namespace={props.obj.metadata.namespace} title={ref.uid} /></li>
-        </ul>) || <span className="text-muted">None</span> }
-    </div>
-    <div className="hidden-xs hidden-sm hidden-md col-lg-2">
-      {phaseFor(_.get(props.obj.status, 'phase')) || 'Unknown'}
-    </div>
-    <div className="dropdown-kebab-pf">
-      <ResourceKebab actions={Kebab.factory.common} kind={referenceForModel(InstallPlanModel)} resource={props.obj} />
-    </div>
-  </ResourceRow>;
-};
 
 export const InstallPlanTableRow: React.FC<InstallPlanTableRowProps> = ({obj, index, key, style}) => {
   const phaseFor = (phase: InstallPlanKind['status']['phase']) => phase === 'RequiresApproval'
@@ -141,10 +96,7 @@ export type InstallPlanTableRowProps = {
 
 export const InstallPlansList = requireOperatorGroup((props: InstallPlansListProps) => {
   const EmptyMsg = () => <MsgBox title="No Install Plans Found" detail="Install Plans are created automatically by subscriptions or manually using the CLI." />;
-  return <React.Fragment>
-    <Table {...props} aria-label="Install Plans" Header={InstallPlanTableHeader} Row={InstallPlanTableRow} EmptyMsg={EmptyMsg} />
-    {false && <List {...props} Header={InstallPlanHeader} Row={InstallPlanRow} EmptyMsg={EmptyMsg} /> }
-  </React.Fragment>;
+  return <Table {...props} aria-label="Install Plans" Header={InstallPlanTableHeader} Row={InstallPlanTableRow} EmptyMsg={EmptyMsg} />;
 });
 
 export const InstallPlansPage: React.SFC<InstallPlansPageProps> = (props) => {
@@ -336,7 +288,5 @@ export type InstallPlanPreviewState = {
   error?: string;
 };
 
-InstallPlanHeader.displayName = 'InstallPlanHeader';
-InstallPlanRow.displayName = 'InstallPlanRow';
 InstallPlansList.displayName = 'InstallPlansList';
 InstallPlansPage.displayName = 'InstallPlansPage';
