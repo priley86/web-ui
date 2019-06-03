@@ -1,42 +1,21 @@
 import * as React from 'react';
 import * as _ from 'lodash-es';
 import { Link, match } from 'react-router-dom';
-import * as classNames from 'classnames';
+
 import { referenceForModel, K8sResourceKind } from '../../module/k8s';
 import { requireOperatorGroup, installedFor, supports } from './operator-group';
 import { PackageManifestKind, SubscriptionKind, ClusterServiceVersionLogo, visibilityLabel, OperatorGroupKind, installModesFor, defaultChannelFor } from './index';
 import { PackageManifestModel, SubscriptionModel, CatalogSourceModel, OperatorGroupModel } from '../../models';
 import { StatusBox, MsgBox } from '../utils';
-import { List, ListHeader, ColHead, MultiListPage, Table, Vr, Vd } from '../factory';
+import { List, ListHeader, ColHead, MultiListPage } from '../factory';
 import { getActiveNamespace } from '../../actions/ui';
 import { ALL_NAMESPACES_KEY, OPERATOR_HUB_LABEL } from '../../const';
-
-const tableColumnClasses = [
-  classNames('pf-m-4-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
-  classNames('pf-m-3-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-hidden', 'pf-m-visible-on-md'),
-  classNames('pf-m-5-col-on-lg', 'pf-m-4-col-on-md', 'pf-m-6-col-on-sm'),
-];
 
 export const PackageManifestHeader: React.SFC<PackageManifestHeaderProps> = (props) => <ListHeader>
   <ColHead {...props} className="col-md-4 col-sm-4 col-xs-6">Name</ColHead>
   <ColHead {...props} className="col-md-3 col-sm-4 hidden-xs">Latest Version</ColHead>
   <ColHead {...props} className="col-md-5 col-sm-4 col-xs-6">Subscriptions</ColHead>
 </ListHeader>;
-
-export const PackageManifestTableHeader = () => {
-  return [
-    {
-      title: 'Name', props: { className: tableColumnClasses[0]},
-    },
-    {
-      title: 'Latest Version', props: { className: tableColumnClasses[1]},
-    },
-    {
-      title: 'Subscriptions', props: { className: tableColumnClasses[2]},
-    },
-  ];
-};
-PackageManifestTableHeader.displayName = 'PackageManifestTableHeader';
 
 export const PackageManifestRow: React.SFC<PackageManifestRowProps> = (props) => {
   const {obj, catalogSourceName, catalogSourceNamespace, subscription, defaultNS, canSubscribe} = props;
@@ -65,53 +44,6 @@ export const PackageManifestRow: React.SFC<PackageManifestRowProps> = (props) =>
   </div>;
 };
 
-export const PackageManifestTableRow: React.FC<PackageManifestTableRowProps> =
-  ({obj, index, trKey, style, catalogSourceName, catalogSourceNamespace, subscription, defaultNS, canSubscribe}) => {
-    const ns = getActiveNamespace();
-    const channel = !_.isEmpty(obj.status.defaultChannel) ? obj.status.channels.find(ch => ch.name === obj.status.defaultChannel) : obj.status.channels[0];
-    const {displayName, icon = [], version, provider} = channel.currentCSVDesc;
-
-    const subscriptionLink = () => ns !== ALL_NAMESPACES_KEY
-      ? <Link to={`/operatormanagement/ns/${ns}?name=${subscription.metadata.name}`}>View<span className="visible-lg-inline"> subscription</span></Link>
-      : <Link to={`/operatormanagement/all-namespaces?name=${obj.metadata.name}`}>View<span className="visible-lg-inline"> subscriptions</span></Link>;
-
-    const createSubscriptionLink = () => `/k8s/ns/${ns === ALL_NAMESPACES_KEY ? defaultNS : ns}/${SubscriptionModel.plural}/~new?pkg=${obj.metadata.name}&catalog=${catalogSourceName}&catalogNamespace=${catalogSourceNamespace}`;
-    return (
-      <Vr id={obj.metadata.uid} index={index} trKey={trKey} style={style} className="vertical-align-middle">
-        <Vd className={classNames(tableColumnClasses[0])}>
-          <ClusterServiceVersionLogo displayName={displayName} icon={_.get(icon, '[0]')} provider={provider.name} />
-        </Vd>
-        <Vd className={classNames(tableColumnClasses[1])}>
-          {version} ({channel.name})
-        </Vd>
-        <Vd className={classNames(tableColumnClasses[2])}>
-          <div className="pf-u-display-flex pf-u-justify-content-space-between">
-            { subscription
-              ? subscriptionLink()
-              : <span className="text-muted">None</span>
-            }
-            { canSubscribe && <Link to={createSubscriptionLink()}>
-              <button className="btn btn-primary">Create<span className="pf-u-display-none-on-lg pf-u-display-inline-block-on-xl"> Subscription</span></button>
-            </Link>
-            }
-          </div>
-        </Vd>
-      </Vr>
-    );
-  };
-PackageManifestTableRow.displayName = 'PackageManifestTableRow';
-export type PackageManifestTableRowProps = {
-  obj: PackageManifestKind;
-  index: number;
-  trKey: string;
-  style: object;
-  catalogSourceName: string;
-  catalogSourceNamespace: string;
-  subscription: any;
-  defaultNS: string;
-  canSubscribe: boolean;
-};
-
 export const PackageManifestList = requireOperatorGroup((props: PackageManifestListProps) => {
   type CatalogSourceInfo = {displayName: string, name: string, publisher: string, namespace: string};
   const catalogs = (props.data || []).reduce((allCatalogs, {status}) => allCatalogs.set(status.catalogSource, {
@@ -135,16 +67,14 @@ export const PackageManifestList = requireOperatorGroup((props: PackageManifestL
         </div>
         {props.showDetailsLink && <Link to={`/k8s/ns/${catalog.namespace}/${referenceForModel(CatalogSourceModel)}/${catalog.name}`}>View catalog details</Link>}
       </div>
-      <Table {...props}
+      <List
         loaded={true}
         data={(props.data || []).filter(pkg => pkg.status.catalogSource === catalog.name)}
-        aria-label="Package Manifests"
-        Header={PackageManifestTableHeader}
-        Row={(rowProps: {obj: PackageManifestKind, index: number, key: string, style: object}) => <PackageManifestTableRow
+        filters={props.filters}
+        virtualize={false}
+        Header={PackageManifestHeader}
+        Row={(rowProps: {obj: PackageManifestKind}) => <PackageManifestRow
           obj={rowProps.obj}
-          index={rowProps.index}
-          trKey={rowProps.key}
-          style={rowProps.style}
           catalogSourceName={catalog.name}
           catalogSourceNamespace={catalog.namespace}
           subscription={(props.subscription.data || [])
@@ -154,32 +84,9 @@ export const PackageManifestList = requireOperatorGroup((props: PackageManifestL
             && props.operatorGroup.data
               .filter(og => _.isEmpty(props.namespace) || og.metadata.namespace === props.namespace)
               .some(og => supports(installModesFor(rowProps.obj)(defaultChannelFor(rowProps.obj)))(og))}
-          defaultNS={_.get(props.operatorGroup, 'data[0].metadata.namespace')} />
-        }
-        EmptyMsg={() => <MsgBox title="No PackageManifests Found" detail="The catalog author has not added any packages." />}
-        virtualize />
-      {false &&
-        <List
-          loaded={true}
-          data={(props.data || []).filter(pkg => pkg.status.catalogSource === catalog.name)}
-          filters={props.filters}
-          virtualize={false}
-          Header={PackageManifestHeader}
-          Row={(rowProps: {obj: PackageManifestKind}) => <PackageManifestRow
-            obj={rowProps.obj}
-            catalogSourceName={catalog.name}
-            catalogSourceNamespace={catalog.namespace}
-            subscription={(props.subscription.data || [])
-              .filter(sub => _.isEmpty(props.namespace) || sub.metadata.namespace === props.namespace)
-              .find(sub => sub.spec.name === rowProps.obj.metadata.name)}
-            canSubscribe={!installedFor(props.subscription.data)(props.operatorGroup.data)(rowProps.obj.status.packageName)(getActiveNamespace())
-              && props.operatorGroup.data
-                .filter(og => _.isEmpty(props.namespace) || og.metadata.namespace === props.namespace)
-                .some(og => supports(installModesFor(rowProps.obj)(defaultChannelFor(rowProps.obj)))(og))}
-            defaultNS={_.get(props.operatorGroup, 'data[0].metadata.namespace')} />}
-          label="Package Manifests"
-          EmptyMsg={() => <MsgBox title="No PackageManifests Found" detail="The catalog author has not added any packages." />} />
-      }
+          defaultNS={_.get(props.operatorGroup, 'data[0].metadata.namespace')} />}
+        label="Package Manifests"
+        EmptyMsg={() => <MsgBox title="No PackageManifests Found" detail="The catalog author has not added any packages." />} />
     </div>) }
   </StatusBox>;
 });

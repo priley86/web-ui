@@ -3,52 +3,66 @@ import { Link } from 'react-router-dom';
 import { shallow, ShallowWrapper } from 'enzyme';
 import * as _ from 'lodash-es';
 
-import { PackageManifestTableHeader, PackageManifestTableRow, PackageManifestTableRowProps, PackageManifestList, PackageManifestListProps } from '../../../public/components/operator-lifecycle-manager/package-manifest';
+import { PackageManifestHeader, PackageManifestHeaderProps, PackageManifestRow, PackageManifestRowProps, PackageManifestList, PackageManifestListProps } from '../../../public/components/operator-lifecycle-manager/package-manifest';
 import { ClusterServiceVersionLogo, PackageManifestKind } from '../../../public/components/operator-lifecycle-manager';
-import { TableInnerProps, Vr } from '../../../public/components/factory';
+import { ListHeader, ColHead, List, ListInnerProps } from '../../../public/components/factory';
 import { testPackageManifest, testCatalogSource, testSubscription } from '../../../__mocks__/k8sResourcesMocks';
 
-describe(PackageManifestTableHeader.displayName, () => {
-  it('returns column header definition for manifest', () => {
-    expect(Array.isArray(PackageManifestTableHeader()));
+describe(PackageManifestHeader.displayName, () => {
+  let wrapper: ShallowWrapper<PackageManifestHeaderProps>;
+
+  beforeEach(() => {
+    wrapper = shallow(<PackageManifestHeader />);
+  });
+
+  it('renders column header for package name', () => {
+    expect(wrapper.find(ListHeader).find(ColHead).at(0).childAt(0).text()).toEqual('Name');
+  });
+
+  it('renders column header for latest CSV version for package in catalog', () => {
+    expect(wrapper.find(ListHeader).find(ColHead).at(1).childAt(0).text()).toEqual('Latest Version');
+  });
+
+  it('renders column header for subscriptions', () => {
+    expect(wrapper.find(ListHeader).find(ColHead).at(2).childAt(0).text()).toEqual('Subscriptions');
   });
 });
 
-describe(PackageManifestTableRow.displayName, () => {
-  let wrapper: ShallowWrapper<PackageManifestTableRowProps>;
+describe(PackageManifestRow.displayName, () => {
+  let wrapper: ShallowWrapper<PackageManifestRowProps>;
 
   beforeEach(() => {
-    wrapper = shallow(<PackageManifestTableRow obj={testPackageManifest} catalogSourceNamespace={testCatalogSource.metadata.namespace} catalogSourceName={testCatalogSource.metadata.name} subscription={testSubscription} defaultNS="default" canSubscribe={true} index={0} style={{}} trKey="key" />);
+    wrapper = shallow(<PackageManifestRow obj={testPackageManifest} catalogSourceNamespace={testCatalogSource.metadata.namespace} catalogSourceName={testCatalogSource.metadata.name} subscription={testSubscription} defaultNS="default" canSubscribe={true} />);
   });
 
   it('renders column for package name and logo', () => {
-    expect(wrapper.find(Vr).childAt(0).shallow().find(ClusterServiceVersionLogo).props().displayName).toEqual(testPackageManifest.status.channels[0].currentCSVDesc.displayName);
+    expect(wrapper.find('.co-resource-list__item').childAt(0).find(ClusterServiceVersionLogo).props().displayName).toEqual(testPackageManifest.status.channels[0].currentCSVDesc.displayName);
   });
 
   it('renders column for latest CSV version for package in catalog', () => {
     const {name, currentCSVDesc: {version}} = testPackageManifest.status.channels[0];
-    expect(wrapper.find(Vr).childAt(1).shallow().text()).toEqual(`${version} (${name})`);
+    expect(wrapper.find('.co-resource-list__item').childAt(1).text()).toEqual(`${version} (${name})`);
   });
 
   it('does not render link if no subscriptions exist in the current namespace', () => {
     wrapper = wrapper.setProps({subscription: null});
 
-    expect(wrapper.find(Vr).childAt(2).shallow().text()).toContain('None');
+    expect(wrapper.find('.co-resource-list__item').childAt(2).text()).toContain('None');
   });
 
   it('renders column with link to subscriptions', () => {
-    expect(wrapper.find(Vr).childAt(2).shallow().find(Link).at(0).props().to).toEqual(`/operatormanagement/ns/default?name=${testSubscription.metadata.name}`);
-    expect(wrapper.find(Vr).childAt(2).shallow().find(Link).at(0).childAt(0).text()).toEqual('View');
+    expect(wrapper.find('.co-resource-list__item').childAt(2).find(Link).at(0).props().to).toEqual(`/operatormanagement/ns/default?name=${testSubscription.metadata.name}`);
+    expect(wrapper.find('.co-resource-list__item').childAt(2).find(Link).at(0).childAt(0).text()).toEqual('View');
   });
 
   it('renders button to create new subscription if `canSubscribe` is true', () => {
-    expect(wrapper.find(Vr).childAt(2).shallow().find('button').text()).toEqual('Create Subscription');
+    expect(wrapper.find('.co-resource-list__item').childAt(2).find('button').text()).toEqual('Create Subscription');
   });
 
   it('does not render button to create new subscription if `canSubscribe` is false', () => {
     wrapper = wrapper.setProps({canSubscribe: false});
 
-    expect(wrapper.find(Vr).childAt(2).shallow().find('button').exists()).toBe(false);
+    expect(wrapper.find('.co-resource-list__item').childAt(2).find('button').exists()).toBe(false);
   });
 });
 
@@ -73,13 +87,12 @@ describe(PackageManifestList.displayName, () => {
     });
   });
 
-  it('renders `Table` component with correct props for each section', () => {
-    expect(wrapper.find('Connect(TableInner)').length).toEqual(2);
+  it('renders `List` component with correct props for each section', () => {
+    expect(wrapper.find(List).length).toEqual(2);
     packages.forEach((pkg, i) => {
-      const tableProps = (wrapper.find('.co-catalogsource-list__section').at(i).find('Connect(TableInner)').props() as unknown) as TableInnerProps;
-      expect(tableProps.Header).toEqual(PackageManifestTableHeader);
-      expect(tableProps.data.length).toEqual(1);
-      expect(tableProps['aria-label']).toEqual('Package Manifests');
+      expect(wrapper.find('.co-catalogsource-list__section').at(i).find<ListInnerProps>(List).props().Header).toEqual(PackageManifestHeader);
+      expect(wrapper.find('.co-catalogsource-list__section').at(i).find<ListInnerProps>(List).props().data.length).toEqual(1);
+      expect(wrapper.find('.co-catalogsource-list__section').at(i).find<ListInnerProps>(List).props().label).toEqual('Package Manifests');
     });
   });
 });
