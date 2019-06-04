@@ -17,7 +17,7 @@ export const labels = $$('.co-m-label');
 export const expiredSilenceIcon = $('.co-m-pane__details .fa-ban');
 export const ruleLink = $('.co-m-pane__details .co-resource-item__resource-name');
 export const silenceComment = $$('.co-m-pane__details dd').get(-2);
-export const firstAlertsListLink = $$('.ReactVirtualized__VirtualGrid__innerScrollContainer tr a.co-resource-item').first();
+export const firstAlertsListLink = $$('.co-resource-list__item a.co-resource-item').first();
 
 // Silence form
 export const matcherNameInput = $('input[placeholder=Name]');
