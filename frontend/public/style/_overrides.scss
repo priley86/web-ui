@@ -203,8 +203,8 @@ tags-input .autocomplete .suggestion-item em {
   }
   th {
     padding-top: 0 !important;
-    color: $color-text-secondary;
-    font-weight: 400;
+    color: $color-text-primary;
+    font-weight: var(--pf-global--FontWeight--bold);
   }
   thead > tr > th {
     border-bottom: 0;
@@ -515,6 +515,11 @@ kbd {
 //this can go away after Bootstrap 3 - only increases specificty
 .pf-c-table tr>.pf-m-hidden {
   display: var(--pf-hidden-visible--Display);
+}
+
+.pf-c-table tr > th {
+  color: $color-text-primary;
+  font-weight: var(--pf-global--FontWeight--bold);
 }
 
 // override .co-m-table-grid [class*='col-'], .co-m-table-grid .row
