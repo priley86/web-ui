@@ -291,7 +291,7 @@ const AlertsDetailsPage = withFallback(connect(alertStateToProps)((props: Alerts
                 <dd>
                   <div className="co-resource-item">
                     <MonitoringResourceIcon resource={AlertRuleResource} />
-                    <Link to={ruleURL(rule)} className="co-resource-item__resource-name">{_.get(rule, 'name')}</Link>
+                    <Link to={ruleURL(rule)} data-test-id="alert-detail-resource-link" className="co-resource-item__resource-name">{_.get(rule, 'name')}</Link>
                   </div>
                 </dd>
               </dl>
@@ -523,29 +523,6 @@ const SilencesDetailsPage = withFallback(connect(silenceParamToProps)((props: Si
   </React.Fragment>;
 }));
 
-// const AlertRow = ({obj}) => {
-//   const {annotations = {}, labels = {}} = obj;
-//   const state = alertState(obj);
-
-//   return <ResourceRow obj={obj}>
-//     <div className="col-sm-7 col-xs-8">
-//       <div className="co-resource-item">
-//         <MonitoringResourceIcon resource={AlertResource} />
-//         <Link to={alertURL(obj, obj.rule.id)} className="co-resource-item__resource-name">{labels.alertname}</Link>
-//       </div>
-//       <div className="monitoring-description">{annotations.description || annotations.message}</div>
-//     </div>
-//     <div className="col-sm-3 col-xs-4">
-//       <AlertState state={state} />
-//       <AlertStateDescription alert={obj} />
-//     </div>
-//     <div className="col-sm-2 hidden-xs co-truncate">{_.startCase(_.get(labels, 'severity')) || '-'}</div>
-//     <div className="dropdown-kebab-pf">
-//       <Kebab options={state === AlertStates.Firing || state === AlertStates.Pending ? [silenceAlert(obj), viewAlertRule(obj)] : [viewAlertRule(obj)]} />
-//     </div>
-//   </ResourceRow>;
-// };
-
 const tableAlertClasses = [
   classNames('pf-m-7-col-on-md', 'pf-m-8-col-on-sm'),
   classNames('pf-m-3-col-on-md', 'pf-m-4-col-on-sm'),
@@ -561,7 +538,7 @@ const AlertTableRow: React.FC<AlertTableRowProps> = ({obj, index, key, style}) =
       <Vd className={tableAlertClasses[0]}>
         <div className="co-resource-item">
           <MonitoringResourceIcon resource={AlertResource} />
-          <Link to={alertURL(obj, obj.rule.id)} className="co-resource-item__resource-name">{labels && labels.alertname}</Link>
+          <Link to={alertURL(obj, obj.rule.id)} data-test-id="alert-resource-link" className="co-resource-item__resource-name">{labels && labels.alertname}</Link>
         </div>
         <div className="monitoring-description">{annotations.description || annotations.message}</div>
       </Vd>
@@ -803,7 +780,7 @@ const SilenceRow = ({obj}) => {
     <div className="col-sm-7 col-xs-8">
       <div className="co-resource-item">
         <MonitoringResourceIcon resource={SilenceResource} />
-        <Link className="co-resource-item__resource-name" title={obj.id} to={`${SilenceResource.path}/${obj.id}`}>{obj.name}</Link>
+        <Link className="co-resource-item__resource-name" data-test-id="silence-resource-link" title={obj.id} to={`${SilenceResource.path}/${obj.id}`}>{obj.name}</Link>
       </div>
       <div className="monitoring-label-list">
         <SilenceMatchersList silence={obj} />
@@ -829,7 +806,7 @@ const SilenceTableRow: React.FC<SilenceTableRowProps> = ({obj, index, key, style
       <Vd className={tableSilenceClasses[0]}>
         <div className="co-resource-item">
           <MonitoringResourceIcon resource={SilenceResource} />
-          <Link className="co-resource-item__resource-name" title={obj.id} to={`${SilenceResource.path}/${obj.id}`}>{obj.name}</Link>
+          <Link className="co-resource-item__resource-name" data-test-id="silence-resource-link" title={obj.id} to={`${SilenceResource.path}/${obj.id}`}>{obj.name}</Link>
         </div>
         <div className="monitoring-label-list">
           <SilenceMatchersList silence={obj} />
