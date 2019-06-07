@@ -38,15 +38,15 @@ export const ClusterServiceClassTableHeader = () => {
   return [
     {
       title: 'Display Name', sortFunc: 'serviceClassDisplayName', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'External Name', sortField: 'spec.externalName', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Broker', sortField: 'spec.clusterServiceBrokerName', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
   ];
 };

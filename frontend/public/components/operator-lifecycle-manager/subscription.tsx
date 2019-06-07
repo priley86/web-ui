@@ -35,23 +35,23 @@ export const SubscriptionTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
-      title: 'Status', props: { className: tableColumnClasses[2]},
+      title: 'Status', props: { className: tableColumnClasses[2] },
     },
     {
-      title: 'Channel', props: { className: tableColumnClasses[3]},
+      title: 'Channel', props: { className: tableColumnClasses[3] },
     },
     {
-      title: 'Approval Strategy', props: { className: tableColumnClasses[4]},
+      title: 'Approval Strategy', props: { className: tableColumnClasses[4] },
     },
     {
-      title: '', props: { className: tableColumnClasses[5]},
+      title: '', props: { className: tableColumnClasses[5] },
     },
   ];
 };

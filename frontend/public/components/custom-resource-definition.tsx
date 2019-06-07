@@ -32,22 +32,26 @@ export const CRDTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'spec.names.kind', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Group', sortField: 'spec.group', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Version', sortField: 'spec.version', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Namespaced', sortField: 'spec.scope', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
-    { title: 'Established', props: { className: tableColumnClasses[4]}},
-    { title: '', props: { className: tableColumnClasses[5]}},
+    {
+      title: 'Established', props: { className: tableColumnClasses[4] },
+    },
+    {
+      title: '', props: { className: tableColumnClasses[5] },
+    },
   ];
 };
 CRDTableHeader.displayName = 'CRDTableHeader';

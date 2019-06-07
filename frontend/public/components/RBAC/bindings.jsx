@@ -121,26 +121,26 @@ export const RoleBindingsTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Role Ref', sortField: 'roleRef.name', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Subject Kind', sortField: 'subject.kind', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Subject Name', sortField: 'subject.name', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
     {
       title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
-      props: { className: tableColumnClasses[4]},
+      props: { className: tableColumnClasses[4] },
     },
-    { title: '',
-      props: { className: tableColumnClasses[5]},
+    {
+      title: '', props: { className: tableColumnClasses[5] },
     },
   ];
 };

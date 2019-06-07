@@ -126,23 +126,23 @@ export const AlertManagerTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Labels', sortField: 'metadata.labels', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Version', sortField: 'spec.version', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
     {
       title: 'Node Selector', sortField: 'spec.nodeSelector', transforms: [sortable],
-      props: { className: tableColumnClasses[4]},
+      props: { className: tableColumnClasses[4] },
     },
   ];
 };

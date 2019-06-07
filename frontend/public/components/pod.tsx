@@ -105,31 +105,30 @@ export const PodTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Pod Labels', sortField: 'metadata.labels', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Node', sortField: 'spec.nodeName', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
     {
       title: 'Status', sortFunc: 'podPhase', transforms: [sortable],
-      props: { className: tableColumnClasses[4]},
+      props: { className: tableColumnClasses[4] },
     },
     {
       title: 'Readiness', sortFunc: 'podReadiness', transforms: [sortable],
-      props: { className: tableColumnClasses[5]},
+      props: { className: tableColumnClasses[5] },
     },
     {
-      title: '',
-      props: { className: tableColumnClasses[6]},
+      title: '', props: { className: tableColumnClasses[6] },
     },
   ];
 };

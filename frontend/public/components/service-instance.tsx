@@ -189,31 +189,30 @@ export const ServiceInstancesTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Service Class', sortField: 'spec.clusterServiceClassExternalName', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Status', sortFunc: 'serviceCatalogStatus', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
     {
       title: 'Plan', sortFunc: 'planExternalName', transforms: [sortable],
-      props: { className: tableColumnClasses[4]},
+      props: { className: tableColumnClasses[4] },
     },
     {
       title: 'Created', sortField: 'metadata.creationTimestamp', transforms: [sortable],
-      props: { className: tableColumnClasses[5]},
+      props: { className: tableColumnClasses[5] },
     },
     {
-      title: '',
-      props: { className: tableColumnClasses[6]},
+      title: '', props: { className: tableColumnClasses[6] },
     },
   ];
 };

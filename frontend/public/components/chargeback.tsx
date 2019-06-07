@@ -15,8 +15,8 @@ import {
   MsgBox,
 } from './utils/status-box';
 import {
-  K8sResourceKind,
   GroupVersionKind,
+  K8sResourceKind,
   modelFor,
   referenceForModel,
   resourceURL,
@@ -80,29 +80,29 @@ export const ReportsTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
-      title: 'Report Generation Query', props: { className: tableColumnClasses[2]},
+      title: 'Report Generation Query', props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Status', sortField: 'spec.status.phase', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
     {
       title: 'Reporting Start', sortField: 'spec.reportingStart', transforms: [sortable],
-      props: { className: tableColumnClasses[4]},
+      props: { className: tableColumnClasses[4] },
     },
     {
       title: 'Reporting End', sortField: 'spec.reportingEnd', transforms: [sortable],
-      props: { className: tableColumnClasses[5]},
+      props: { className: tableColumnClasses[5] },
     },
-    { title: '',
-      props: { className: tableColumnClasses[6]},
+    {
+      title: '', props: { className: tableColumnClasses[6] },
     },
   ];
 };

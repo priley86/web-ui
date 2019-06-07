@@ -29,20 +29,19 @@ export const StorageClassTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Provisioner', sortField: 'provisioner', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: <React.Fragment>Reclaim <span className="pf-u-display-none-on-md pf-u-display-inline-block-on-lg">Policy</span></React.Fragment>,
       sortField: 'reclaimPolicy', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
-      title: '',
-      props: { className: tableColumnClasses[3]},
+      title: '', props: { className: tableColumnClasses[3] },
     },
   ];
 };

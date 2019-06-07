@@ -222,23 +222,23 @@ export const MachineConfigPoolTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Configuration', sortField: 'status.configuration.name', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
-      title: 'Updated', props: { className: tableColumnClasses[2]},
+      title: 'Updated', props: { className: tableColumnClasses[2] },
     },
     {
-      title: 'Updating', props: { className: tableColumnClasses[3]},
+      title: 'Updating', props: { className: tableColumnClasses[3] },
     },
     {
-      title: 'Degraded', props: { className: tableColumnClasses[4]},
+      title: 'Degraded', props: { className: tableColumnClasses[4] },
     },
     {
-      title: '', props: { className: tableColumnClasses[5]},
+      title: '', props: { className: tableColumnClasses[5] },
     },
   ];
 };

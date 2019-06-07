@@ -53,22 +53,22 @@ export const ClusterServiceVersionTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
-      title: 'Namespace', props: { className: tableColumnClasses[1]},
+      title: 'Namespace', props: { className: tableColumnClasses[1] },
     },
     {
-      title: 'Deployment', props: { className: tableColumnClasses[2]},
+      title: 'Deployment', props: { className: tableColumnClasses[2] },
     },
     {
-      title: 'Status', props: { className: tableColumnClasses[3]},
+      title: 'Status', props: { className: tableColumnClasses[3] },
     },
     {
-      title: 'Provided APIs', props: { className: tableColumnClasses[4]},
+      title: 'Provided APIs', props: { className: tableColumnClasses[4] },
     },
     {
-      title: '', props: { className: tableColumnClasses[5]},
+      title: '', props: { className: tableColumnClasses[5] },
     },
   ];
 };

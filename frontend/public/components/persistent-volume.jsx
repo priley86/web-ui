@@ -24,30 +24,30 @@ const TableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Status', sortField: 'status.phase', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Claim', sortField: 'spec.claimRef.name', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Capacity', sortField: 'spec.capacity.storage', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
     {
       title: 'Labels', sortField: 'metadata.labels', transforms: [sortable],
-      props: { className: tableColumnClasses[4]},
+      props: { className: tableColumnClasses[4] },
     },
     {
       title: 'Created', sortField: 'metadata.creationTimestamp', transforms: [sortable],
-      props: { className: tableColumnClasses[5]},
+      props: { className: tableColumnClasses[5] },
     },
     {
-      title: '', props: { className: tableColumnClasses[6]},
+      title: '', props: { className: tableColumnClasses[6] },
     },
   ];
 };

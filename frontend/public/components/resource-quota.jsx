@@ -52,13 +52,15 @@ export const ResourceQuotaTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Namespace', sortField: 'metadata.namespace', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
-    { title: '', props: { className: tableColumnClasses[2]}},
+    {
+      title: '', props: { className: tableColumnClasses[2] },
+    },
   ];
 };
 ResourceQuotaTableHeader.displayName = 'ResourceQuotaTableHeader';

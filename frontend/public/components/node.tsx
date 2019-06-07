@@ -74,23 +74,22 @@ export const NodeTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Status', sortFunc: 'nodeReadiness', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Role', sortFunc: 'nodeRoles', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Machine', sortField: 'metadata.annotations[\'machine.openshift.io/machine\']', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
     {
-      title: '',
-      props: { className: tableColumnClasses[4]},
+      title: '', props: { className: tableColumnClasses[4] },
     },
   ];
 };

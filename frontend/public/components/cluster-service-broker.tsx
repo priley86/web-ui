@@ -22,22 +22,22 @@ export const ClusterServiceBrokerTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Status', sortFunc: 'serviceCatalogStatus', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Relist Behavior', sortField: 'spec.relistBehavior', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
       title: 'Last Retrieved', sortField: 'status.lastCatalogRetrievalTime', transforms: [sortable],
-      props: { className: tableColumnClasses[3]},
+      props: { className: tableColumnClasses[3] },
     },
-    { title: '',
-      props: { className: tableColumnClasses[4]},
+    {
+      title: '', props: { className: tableColumnClasses[4] },
     },
   ];
 };

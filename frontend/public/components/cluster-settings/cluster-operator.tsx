@@ -60,18 +60,18 @@ export const ClusterOperatorTableHeader = () => {
   return [
     {
       title: 'Name', sortField: 'metadata.name', transforms: [sortable],
-      props: { className: tableColumnClasses[0]},
+      props: { className: tableColumnClasses[0] },
     },
     {
       title: 'Status', sortFunc: 'getClusterOperatorStatus', transforms: [sortable],
-      props: { className: tableColumnClasses[1]},
+      props: { className: tableColumnClasses[1] },
     },
     {
       title: 'Version', sortFunc: 'getClusterOperatorVersion', transforms: [sortable],
-      props: { className: tableColumnClasses[2]},
+      props: { className: tableColumnClasses[2] },
     },
     {
-      title: 'Message', props: { className: tableColumnClasses[3]},
+      title: 'Message', props: { className: tableColumnClasses[3] },
     },
   ];
 };
