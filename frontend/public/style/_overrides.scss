@@ -640,3 +640,8 @@ kbd {
     width: 10% !important;
   }
 }
+
+//this can go away after Bootstrap 3 - only increases specificty	
+.pf-c-table tr>.pf-m-hidden {
+  display: var(--pf-hidden-visible--Display);	
+}

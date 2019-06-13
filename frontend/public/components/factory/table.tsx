@@ -284,7 +284,7 @@ const stateToProps = ({UI}, {data = [], defaultSortField = 'metadata.name', defa
 // Common table row/columns helper SFCs for implementing accessible data grid
 export const TableRow: React.SFC<TableRowProps> = ({id, index, trKey, style, className, ...props}) => {
   return (
-    <tr {...props} data-id={id} data-index={index} data-test-rows="resource-row" data-key={trKey} style={style} className={className} role="row" />
+    <tr {...props} data-id={id} data-index={index} data-test-rows="resource-row" data-key={trKey} style={style} className={className + ' pf-l-grid'} role="row" />
   );
 };
 TableRow.displayName = 'TableRow';
