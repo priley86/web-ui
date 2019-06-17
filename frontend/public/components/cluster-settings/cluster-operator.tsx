@@ -146,25 +146,31 @@ export const ClusterOperatorPage: React.SFC<ClusterOperatorPageProps> = props =>
   </React.Fragment>;
 
 const OperandVersions: React.SFC<OperandVersionsProps> = ({versions}) => {
+  const OperandVersionsHeader = () => {
+    return [
+      { title: 'Name', transforms: [sortable], },
+      { title: 'Version', transforms: [sortable], },
+    ];
+  };
+  const OperandVersionsRows = ({componentProps}) => {
+    return _.map(componentProps.data, ({name, version}) => {
+      return [
+        { title: name },
+        { title: version },
+      ];
+    });
+  }; 
+
   return _.isEmpty(versions)
     ? <EmptyBox label="Versions" />
     : <div className="co-table-container">
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Version</th>
-          </tr>
-        </thead>
-        <tbody>
-          {_.map(versions, ({name, version}, i) => (
-            <tr key={i}>
-              <td>{name}</td>
-              <td>{version}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <Table
+          aria-label="Versions"
+          data={versions}
+          Header={OperandVersionsHeader}
+          Rows={OperandVersionsRows}
+          virtualize={false}
+          loaded={true} />
     </div>;
 };
 

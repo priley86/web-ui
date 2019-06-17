@@ -638,3 +638,10 @@ kbd {
     width: 10% !important;
   }
 }
+
+// will submit PR to PF Core - to be removed before merge
+@media screen and (max-width: 768px) {
+  .pf-m-grid-md.pf-c-table [data-label]::before {
+    font-weight: var(--pf-global--FontWeight--bold) !important;
+  }
+}
