@@ -305,6 +305,7 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TableOwn
     _bodyRef: any;
 
     constructor(props){
+      console.log(props, "table");
       super(props);
       const componentProps: any = _.pick(props, ['data', 'filters', 'selected', 'match', 'kindObj']);
       const columns = props.Header(componentProps);
@@ -406,7 +407,7 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TableOwn
         <TableWrapper virtualize={virtualize} ariaLabel={ariaLabel} ariaRowCount={ariaRowCount}>
           <PfTable
             cells={columns}
-            rows={virtualize ? [] : Rows({componentProps, selectedResourcesForKind, customData})}
+            rows={virtualize ? componentProps.data : Rows({componentProps, selectedResourcesForKind, customData})}
             gridBreakPoint={virtualize ? TableGridBreakpoint.none : TableGridBreakpoint.gridMd}
             onSort={this._onSort}
             onSelect={onSelect}
