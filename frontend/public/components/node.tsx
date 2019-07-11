@@ -97,11 +97,22 @@ NodeTableHeader.displayName = 'NodeTableHeader';
 
 const NodeStatus = ({node}) => <StatusIconAndText status={nodeStatus(node)} />;
 
+const onSelect = (event, isSelected, virtualRowIndex, rowData) => {
+  console.log('isSelected', isSelected, 'virtualRowIndex', virtualRowIndex, 'rowData', rowData);
+}
+
+
 const NodeTableRow: React.FC<NodeTableRowProps> = ({obj: node, index, key, style}) => {
   const machine = getMachine(node);
   const roles = getNodeRoles(node).sort();
   return (
     <TableRow id={node.metadata.uid} index={index} trKey={key} style={style}>
+      <td data-key="0" className="pf-c-table__check" role="gridcell">
+        <input type="checkbox" checked={false} 
+          onChange={(e) => 
+            { onSelect(e, e.target.checked, index, node)}}
+          />
+      </td>
       <TableData className={tableColumnClasses[0]}>
         <ResourceLink kind="Node" name={node.metadata.name} title={node.metadata.uid} />
       </TableData>
@@ -128,7 +139,7 @@ type NodeTableRowProps = {
   style: object;
 };
 
-const NodesList = props => <Table {...props} aria-label="Nodes" Header={NodeTableHeader} Row={NodeTableRow} virtualize />;
+const NodesList = props => <Table {...props} aria-label="Nodes" Header={NodeTableHeader} Row={NodeTableRow} onSelect={onSelect} virtualize />;
 
 const filters = [{
   type: 'node-status',
