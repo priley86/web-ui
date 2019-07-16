@@ -220,13 +220,13 @@ const VirtualBody: React.SFC<VirtualBodyProps> = (props) => {
   );
 };
 
-export type RowFunctionArgs = {obj: object, index: number, columns: [], isScrolling: boolean, key: string, style: object, customData?: object};
+export type RowFunctionArgs = {obj: object, index: number, columns: [], isScrolling: boolean, key: string, style: object, customData?: any};
 export type RowFunction = (args: RowFunctionArgs) => JSX.Element;
 
 export type VirtualBodyProps = {
   bindBodyRef: Function;
   cellMeasurementCache: any;
-  customData?: object;
+  customData?: any;
   Row: RowFunction | React.ComponentClass<any, any> | React.ComponentType<any>;
   height: number;
   isScrolling: boolean;
@@ -239,7 +239,7 @@ export type VirtualBodyProps = {
 }
 
 type TableOwnProps = {
-  customData?: object;
+  customData?: any;
   data?: any[];
   defaultSortFunc?: string;
   defaultSortField?: string;
@@ -272,7 +272,7 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TableOwn
 )(
   class TableInner extends React.Component<TableInnerProps, TableInnerState> {
     static propTypes = {
-      customData: PropTypes.object,
+      customData: PropTypes.any,
       data: PropTypes.array,
       EmptyMsg: PropTypes.func,
       expand: PropTypes.bool,
@@ -353,11 +353,12 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TableOwn
     }
 
     componentDidUpdate(prevProps){
-      const {data, virtualize} = this.props;
-      if (virtualize && this._bodyRef && !_.isEqual(prevProps.data, data)){
-        // force react-virtualized to update after data changes with `isScrollingOptOut` set true
-        this._refreshGrid();
-      }
+      // temporarily comments while debugging
+      // const {data, virtualize} = this.props;
+      // if (virtualize && this._bodyRef && !_.isEqual(prevProps.data, data)){
+      //   // force react-virtualized to update after data changes with `isScrollingOptOut` set true
+      //   this._refreshGrid();
+      // }
     }
 
     componentWillUnmount(){
@@ -407,7 +408,7 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TableOwn
         <TableWrapper virtualize={virtualize} ariaLabel={ariaLabel} ariaRowCount={ariaRowCount}>
           <PfTable
             cells={columns}
-            rows={virtualize ? componentProps.data : Rows({componentProps, selectedResourcesForKind, customData})}
+            rows={virtualize ? customData : Rows({componentProps, selectedResourcesForKind, customData})}
             gridBreakPoint={virtualize ? TableGridBreakpoint.none : TableGridBreakpoint.gridMd}
             onSort={this._onSort}
             onSelect={onSelect}
@@ -460,7 +461,7 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TableOwn
 
 export type TableInnerProps = {
   'aria-label': string;
-  customData?: object;
+  customData?: any;
   currentSortField?: string;
   currentSortFunc?: string;
   currentSortOrder?: any;

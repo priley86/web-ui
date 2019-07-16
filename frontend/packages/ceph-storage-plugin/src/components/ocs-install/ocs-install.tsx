@@ -92,11 +92,11 @@ const getConvertedUnits = (value, initialUnit, preferredUnit) => {
 const NodeTableRow: React.FC<NodeTableRowProps> = ({ obj: node, index, key, style, customData, onSelect }) => {
   const roles = getNodeRoles(node).sort();
   const deviceCount = configMapsForAllNodes[node.metadata.name] || 0;
-
+  const isChecked = customData.length > index ? customData[index].selected : false;
   return (
     <TableRow id={node.metadata.uid} index={index} trKey={key} style={style}>
       <TableData className={`pf-c-table__check ${tableColumnClasses[0]}`}>
-        <input type="checkbox" checked={customData[index].selected}
+        <input type="checkbox" checked={isChecked}
           onChange={(e) => { onSelect(e, e.target.checked, index, node) }}
         />
       </TableData>
@@ -123,23 +123,49 @@ const NodeTableRow: React.FC<NodeTableRowProps> = ({ obj: node, index, key, styl
 };
 
 export const NodeList: React.FC<any> = props => {
-  const [rowData, setRowData] = React.useState(props.customData);
+  const [selectedRowData, setSelectedRowData] = React.useState(props.customData);
 
-  const onSelect = (event, isSelected, virtualRowIndex, rowData1) => {
-    rowData[virtualRowIndex].selected = true;
-    setRowData(rowData);
-    props.onSelect(event, isSelected, virtualRowIndex, rowData1);
+  const onSingleSelect = (event, isSelected, virtualRowIndex, node) => {
+    onSelect(event, isSelected, virtualRowIndex, props.data, node);
   };
+  const onSelectAll = (event, isSelected, virtualRowIndex) => {
+    event.preventDefault();
+    onSelect(event, isSelected, virtualRowIndex, props.data, null);
+  }
+  const onSelect = (event, isSelected, virtualRowIndex, data, node) => {
+    event.preventDefault();
+    let newSelectedRowData = _.cloneDeep(selectedRowData);
 
+    // clone `data` in case previous Firehose updates added elements, preserve existing selection state
+    _.each(data, (row, index: number) => {
+      if(index < newSelectedRowData.length){
+        //preserve existing selection state
+        newSelectedRowData[index] = {...row, uid: row.metadata.uid, selected: newSelectedRowData[index].selected };
+      } else {
+        // set initial selection state from storage here if necessary...for now, initialize it false
+        newSelectedRowData.push({...row, uid: row.metadata.uid, selected: false });
+      }
+    });
+
+    if(virtualRowIndex !== -1){
+      // set the selection based on virtualRowIndex node, it should exist in the array now
+      newSelectedRowData[virtualRowIndex].selected = isSelected;
+    } else { //selectAll
+      newSelectedRowData = _.map(selectedRowData, row => ({ ...row, selected: isSelected}));
+    }
+    setSelectedRowData(newSelectedRowData);
+
+    props.onSelect(event, isSelected, virtualRowIndex, data, node, newSelectedRowData);
+  };
   return (
     <Table 
-      customData={props.data} 
+      customData={selectedRowData} 
       {...props} 
       Header={NodeTableHeader} 
-      Row={(nodeProps) => <NodeTableRow {...nodeProps} onSelect={onSelect} />} 
+      Row={(nodeProps) => <NodeTableRow {...nodeProps} onSelect={onSingleSelect} />} // this is the correct select callback for single row
       aria-label="Nodes" 
       virtualize 
-      onSelect={props.onSelect} 
+      onSelect={onSelectAll} // this is the selectAll callback for virtualized tables
     />
   );
 };
@@ -149,12 +175,16 @@ export const CreateOCSServiceForm: React.FC<CreateOCSServiceFormProps> = React.m
   const [error, setError] = React.useState('');
   const [inProgress, setProgress] = React.useState(false);
   const [ipiInstallationMode, setIpiInstallationMode] = React.useState(true);
-  const [selectedRowData, setSelectedRowData] = React.useState([]);
 
-  const onSelect = (event, isSelected, virtualRowIndex, rowData1) => {
-    console.log(rowData1, 'customData');
-    console.log('isSelected', isSelected, 'virtualRowIndex', virtualRowIndex, 'rowData', rowData1);
-    setSelectedRowData([...selectedRowData, rowData1]);
+  // must initialize like this w/ at least one item, current bug in pf-react row.every for selectAll
+  // setting a dummy value for now
+  const initialSelectionState = [{selected: false}];
+  const [selectedRowData, setSelectedRowData] = React.useState(initialSelectionState);
+
+  const onSelect = (event, isSelected, virtualRowIndex, data, node, newSelectedRowData) => {
+    // `newSelectedRowData` can be persisted somewhere after it is passed back up...
+    console.log('isSelected', isSelected, 'virtualRowIndex', virtualRowIndex, 'data', data, 'node', node, 'newSelectedRowData', newSelectedRowData);
+    setSelectedRowData(newSelectedRowData);
   };
 
   React.useEffect(() => {
@@ -182,7 +212,6 @@ export const CreateOCSServiceForm: React.FC<CreateOCSServiceFormProps> = React.m
       })
       .catch((err: Status) => setError(err.message));
   };
-
   return (
     <div className="ceph-ocs-install__form co-m-pane__body co-m-pane__form">
       <h1 className="co-m-pane__heading co-m-pane__heading--baseline">
@@ -215,7 +244,7 @@ export const CreateOCSServiceForm: React.FC<CreateOCSServiceFormProps> = React.m
             <Alert className="co-alert ceph-ocs-info__alert" variant="info" title="An AWS bucket will be created to provide the OCS Service." />
             <p className="co-legend co-required ceph-ocs-desc__legend">Select at least 3 nodes you wish to use.</p>
           </div>}
-          {!ipiInstallationMode && <ListPage kind={NodeModel.kind} showTitle={false} ListComponent={props => <NodeList customData={props.data} {...props} onSelect={onSelect} />} />}
+          {!ipiInstallationMode && <ListPage kind={NodeModel.kind} showTitle={false} ListComponent={props => <NodeList data={props.data} customData={selectedRowData} {...props} onSelect={onSelect} />} />}
         </fieldset>
         <ButtonBar errorMessage={error} inProgress={inProgress}>
           <button type="submit" className="btn btn-primary" id="save-changes">
@@ -310,6 +339,6 @@ type NodeTableRowProps = {
   index: number;
   key?: string;
   style: object;
-  customData?: object;
+  customData?: any;
   onSelect?: Function;
 };
