@@ -207,7 +207,7 @@ const getRowKey = (obj, index) => {
 const VirtualBody: React.SFC<VirtualBodyProps> = (props) => {
   const { bindBodyRef, cellMeasurementCache, customData, Row, height, isScrolling, onChildScroll, data, columns, scrollTop, width } = props;
 
-  const rowRenderer = ({index, isScrolling: scrolling, style, parent}) => {
+  const rowRenderer = ({index, isScrolling: scrolling, key, style, parent}) => {
     const rowKey = getRowKey(data[index], index);
     const rowArgs = {obj: data[index], index, columns, isScrolling: scrolling, key: rowKey, style, customData};
     const row = (Row as RowFunction)(rowArgs as RowFunctionArgs);
@@ -215,7 +215,7 @@ const VirtualBody: React.SFC<VirtualBodyProps> = (props) => {
     return <CellMeasurer
       cache={cellMeasurementCache}
       columnIndex={0}
-      key={rowKey}
+      key={key}
       parent={parent}
       rowIndex={index}>{row}</CellMeasurer>;
   };
@@ -340,7 +340,8 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TablePro
       this._onSort = this._onSort.bind(this);
       this._handleResize = _.debounce(this._handleResize.bind(this), 100);
       this._bindBodyRef = this._bindBodyRef.bind(this);
-      this._refreshGrid = _.debounce(this._refreshGrid.bind(this), 100);
+      this._clearChangedRows = this._clearChangedRows.bind(this);
+      this._refreshGrid = this._refreshGrid.bind(this);
 
       let sortBy = {};
       if (currentSortField && currentSortOrder) {
@@ -359,11 +360,11 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TablePro
       this._cellMeasurementCache = new CellMeasurerCache({
         fixedWidth: true,
         minHeight: 44,
-        keyMapper: rowIndex => {
-          const { data } = this.props;
-          const key = getRowKey(data[rowIndex], rowIndex);
-          return key;
-        },
+        // keyMapper: rowIndex => {
+        //   const { data } = this.props;
+        //   const key = getRowKey(data[rowIndex], rowIndex);
+        //   return key;
+        // },
       });
     }
 
@@ -390,15 +391,32 @@ export const Table = connect<TablePropsFromState,TablePropsFromDispatch,TablePro
 
     componentDidUpdate(prevProps){
       const {data, virtualize} = this.props;
-      if (virtualize && this._bodyRef && !_.isEqual(prevProps.data, data)){
+      if (virtualize && this._bodyRef && prevProps.data !== data){
         console.log('refresh grid');
-        // force react-virtualized to update after data changes with `isScrollingOptOut` set true
-        this._refreshGrid();
+        this._clearChangedRows(prevProps.data, data);
       }
     }
 
     componentWillUnmount(){
       window.removeEventListener('resize', this._handleResize);
+    }
+
+    _clearChangedRows(previousData, data) {
+      data.forEach((item, index) => {
+        if(previousData.length <= index){
+          return;
+        }
+        if(!_.isEqual(item, previousData[index])){
+          this._cellMeasurementCache.clear(index, 0);
+        }
+      });
+      if(previousData.length > data.length){
+        let i = previousData.length;
+        while(i > data.length){
+          this._cellMeasurementCache.clear(i - 1, 0);
+          i += -1;
+        }
+      }
     }
 
     _refreshGrid() {
