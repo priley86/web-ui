@@ -204,12 +204,13 @@ const subscriptionFor = (csv: ClusterServiceVersionKind) => (subs: SubscriptionK
 });
 
 export const filterData = (data) => {
-  return data.map((item) => {
-    const viewData = {...item};
-    delete viewData.metadata.resourceVersion;
-    delete viewData.status.lastUpdateTime;
-    return viewData;
-  });
+  // return data.map((item) => {
+  //   const viewData = {...item};
+  //   delete viewData.metadata.resourceVersion;
+  //   delete viewData.status.lastUpdateTime;
+  //   return viewData;
+  // });
+  return data;
 };
 
 export const ClusterServiceVersionList: React.SFC<ClusterServiceVersionListProps> = ({data, ...props}) => {
